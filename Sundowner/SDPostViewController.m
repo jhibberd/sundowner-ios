@@ -26,9 +26,6 @@ static CGFloat GTTextViewInherentPadding = 8;
 {
     [super viewDidLoad];
     [self.view setBackgroundColor:[UIColor backgroundColor]];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidShow:)
-                                                 name:UIKeyboardDidShowNotification
-                                               object:nil];
     
     // add buttons to the navigation bar
     _acceptButton = [UIBarButtonItem itemAcceptForTarget:self action:@selector(acceptButtonWasClicked)];
@@ -172,18 +169,6 @@ static CGFloat GTTextViewInherentPadding = 8;
 
 -(void)dismissKeyboard {
     [_contentTextView resignFirstResponder];
-}
-
-- (void)keyboardDidShow:(NSNotification *)notification
-{
-    /*
-     TODO might be useful, depending on how scrolling on the page looks
-    NSDictionary* userInfo = [notification userInfo];
-    CGSize keyboardSize = [[userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue].size;
-    _contentTextView.frame = CGRectMake(0,
-                                        0,
-                                        self.view.frame.size.width,
-                                        self.view.frame.size.height - keyboardSize.height); */
 }
 
 - (void)viewWillAppear:(BOOL)animated
