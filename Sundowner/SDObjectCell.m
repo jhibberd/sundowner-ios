@@ -1,6 +1,5 @@
 
 #import <QuartzCore/QuartzCore.h>
-#import "GTDetailFormatter.h"
 #import "SDObjectCell.h"
 #import "UIColor+SDColor.h"
 
@@ -49,20 +48,6 @@ CGFloat const GTPaddingRightOuter =     10;
 + (NSString *)constructAuthorString:(NSDictionary *)object
 {
     return [NSString stringWithFormat:@"by %@", object[@"username"]];
-    
-    // TODO once we have this in version control delete what follows
-    
-    double distance = ((NSNumber *)object[@"distance"]).doubleValue;
-    double timestamp = ((NSNumber *)object[@"created"]).doubleValue;
-    NSString *username = object[@"username"];
-    
-    // cache formatter for efficiency
-    static GTDetailFormatter *formatter = nil;
-    if (formatter == nil) {
-        formatter = [[GTDetailFormatter alloc] init];
-    }
-    
-    return [formatter formatDetailForDistance:distance timestamp:timestamp username:username];
 }
 
 - (void)setObject:(NSDictionary *)object
