@@ -1,5 +1,5 @@
 
-#import "SDObjectCell.h"
+#import "SDContentCell.h"
 #import "SDURLField.h"
 #import "UIColor+SDColor.h"
 

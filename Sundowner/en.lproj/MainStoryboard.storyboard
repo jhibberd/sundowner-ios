@@ -4,10 +4,10 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="2083"/>
     </dependencies>
     <scenes>
-        <!--Objects View Controller - Nearby-->
+        <!--Read View Controller - Nearby-->
         <scene sceneID="d0f-ZA-18g">
             <objects>
-                <tableViewController id="dxD-Rw-LhX" customClass="SDObjectsViewController" sceneMemberID="viewController">
+                <tableViewController id="dxD-Rw-LhX" customClass="SDReadViewController" sceneMemberID="viewController">
                     <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" showsSelectionImmediatelyOnTouchBegin="NO" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="aYd-sA-qnE">
                         <rect key="frame" x="0.0" y="64" width="320" height="504"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -25,10 +25,10 @@
             </objects>
             <point key="canvasLocation" x="425" y="-27"/>
         </scene>
-        <!--Post View Controller - Share-->
+        <!--Write View Controller - Share-->
         <scene sceneID="5hS-WE-AcW">
             <objects>
-                <viewController id="BP8-ol-THy" customClass="SDPostViewController" sceneMemberID="viewController">
+                <viewController id="BP8-ol-THy" customClass="SDWriteViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="LmX-wk-I5R">
                         <rect key="frame" x="0.0" y="64" width="320" height="504"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>

@@ -1,18 +1,18 @@
 
 #import <QuartzCore/QuartzCore.h>
 #import "SDAppDelegate.h"
-#import "SDObjectCell.h"
-#import "SDPostViewController.h"
+#import "SDContentCell.h"
+#import "SDWriteViewController.h"
 #import "SDURLField.h"
 #import "UIBarButtonItem+SDBarButtonItem.h"
 #import "UIColor+SDColor.h"
 
 static CGFloat GTTextViewInherentPadding = 8;
 
-@interface SDPostViewController ()
+@interface SDWriteViewController ()
 @end
 
-@implementation SDPostViewController {
+@implementation SDWriteViewController {
     UIBarButtonItem *_acceptButton;
     UIBarButtonItem *_backButton;
     UITextView *_contentTextView;

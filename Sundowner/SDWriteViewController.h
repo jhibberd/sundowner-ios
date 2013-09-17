@@ -3,6 +3,6 @@
 #import "SDBestLocationDelegate.h"
 #import "SDURLFieldDelegate.h"
 
-@interface SDPostViewController : UIViewController
+@interface SDWriteViewController : UIViewController
     <SDBestLocationDelegate, SDURLFieldDelegate, UITextViewDelegate>
 @end

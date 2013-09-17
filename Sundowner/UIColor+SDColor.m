@@ -3,9 +3,8 @@
 
 @implementation UIColor (SDColor)
 
-/* Google Android Design Guide provides a nice palette
- * http://developer.android.com/design/style/color.html
- */
+// Google Android Design Guide provides a nice palette
+// http://developer.android.com/design/style/color.html
 
 + (UIColor *)textColor {
     return [UIColor colorWithWhite:0.2 alpha:1];

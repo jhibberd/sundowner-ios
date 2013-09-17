@@ -1,6 +1,6 @@
 
 #import <QuartzCore/QuartzCore.h>
-#import "SDObjectCell.h"
+#import "SDContentCell.h"
 #import "UIColor+SDColor.h"
 
 CGFloat const GTTitleFontSize =         22;
@@ -15,7 +15,7 @@ CGFloat const GTPaddingBottomOuter =    0;
 CGFloat const GTPaddingLeftOuter =      10;
 CGFloat const GTPaddingRightOuter =     10;
 
-@implementation SDObjectCell {
+@implementation SDContentCell {
     NSDictionary *_object;
     UIView *_card;
     
@@ -79,19 +79,23 @@ CGFloat const GTPaddingRightOuter =     10;
         [self.author setBackgroundColor:[UIColor clearColor]];
         [_card addSubview:self.author];
         
-        UIGestureRecognizer *recognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(respondToPanGesture:)];
-        recognizer.delegate = self;
-        [self addGestureRecognizer:recognizer];
+        UIGestureRecognizer *panGestureRecognizer =
+            [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(respondToPanGesture:)];
+        panGestureRecognizer.delegate = self;
+        [self addGestureRecognizer:panGestureRecognizer];
+        
+        UITapGestureRecognizer *singleTapGestureRecogniser =
+            [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(respondToSingleTapGesture:)];
+        singleTapGestureRecogniser.numberOfTapsRequired = 1;
+        [self addGestureRecognizer:singleTapGestureRecogniser];
+        
     }
     return self;
 }
 
-- (BOOL)gestureRecognizerShouldBegin:(UIPanGestureRecognizer *)recognizer
+- (void)respondToSingleTapGesture:(UITapGestureRecognizer *)recognizer
 {
-    // prevent vertical scrolling otherwise table scrolling won't work
-    // only allow content to be scrolled to the right
-    CGPoint translation = [recognizer translationInView:self];
-    return fabs(translation.x) > fabs(translation.y) && translation.x > 0;
+    [self.delegate contentURLRequested:_object];
 }
 
 - (void)respondToPanGesture:(UIPanGestureRecognizer *)recognizer
@@ -132,6 +136,14 @@ CGFloat const GTPaddingRightOuter =     10;
         default:
             break;
     }
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIPanGestureRecognizer *)recognizer
+{
+    // prevent vertical scrolling otherwise table scrolling won't work
+    // only allow content to be scrolled to the right
+    CGPoint translation = [recognizer translationInView:self];
+    return fabs(translation.x) > fabs(translation.y) && translation.x > 0;
 }
 
 - (void)setObject:(NSDictionary *)object

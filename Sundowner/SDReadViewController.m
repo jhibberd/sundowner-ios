@@ -1,15 +1,15 @@
 
 #import "SDAppDelegate.h"
-#import "SDObjectCell.h"
-#import "SDObjectsViewController.h"
+#import "SDContentCell.h"
+#import "SDReadViewController.h"
 #import "OpenInChromeController.h"
 #import "UIBarButtonItem+SDBarButtonItem.h"
 #import "UIColor+SDColor.h"
 
-@interface SDObjectsViewController ()
+@interface SDReadViewController ()
 @end
 
-@implementation SDObjectsViewController {
+@implementation SDReadViewController {
     NSMutableArray *_objects;
 }
 
@@ -26,7 +26,7 @@
     [self.tableView setContentInset:UIEdgeInsetsMake(0, 0, GTPaddingTopOuter, 0)];
     
     _objects = [[NSMutableArray alloc] init];
-    [self.tableView registerClass:[SDObjectCell class] forCellReuseIdentifier:@"Object"];
+    [self.tableView registerClass:[SDContentCell class] forCellReuseIdentifier:@"Object"];
     
     // add handler for refreshing gesture
     [self.refreshControl addTarget:self
@@ -85,10 +85,12 @@
     return [_objects count];
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+
+//- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+- (void)contentURLRequested:(NSDictionary *)content
 {
-    NSDictionary *object = [_objects objectAtIndex:indexPath.item];
-    NSURL *url = [[NSURL alloc] initWithString:object[@"url"]];
+    //NSDictionary *object = [_objects objectAtIndex:indexPath.item];
+    NSURL *url = [[NSURL alloc] initWithString:content[@"url"]];
     
     // Ideally open the content URL is Google Chrome which provides a back button that returns the user
     // to this app. If Google Chrome isn't installed use the default browser.
@@ -112,13 +114,13 @@
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     NSDictionary *object = [_objects objectAtIndex:indexPath.item];
-    return [SDObjectCell estimateHeightForObject:object constrainedByWidth:tableView.frame.size.width];
+    return [SDContentCell estimateHeightForObject:object constrainedByWidth:tableView.frame.size.width];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *CellIdentifier = @"Object";
-    SDObjectCell *cell = (SDObjectCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier
+    SDContentCell *cell = (SDContentCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier
                                                                          forIndexPath:indexPath];
     NSDictionary *object = [_objects objectAtIndex:indexPath.item];
     cell.delegate = self;

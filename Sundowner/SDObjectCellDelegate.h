@@ -1,6 +1,7 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol SDObjectCellDelegate <NSObject>
+@protocol SDContentCellDelegate <NSObject>
 - (void)contentVotedDown:(NSDictionary *)content;
+- (void)contentURLRequested:(NSDictionary *)content;
 @end
