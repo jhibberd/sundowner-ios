@@ -6,8 +6,6 @@
 #import "UIBarButtonItem+SDBarButtonItem.h"
 #import "UIColor+SDColor.h"
 
-static NSString *const GTChromeCallback = @"geotag://";
-
 @interface SDObjectsViewController ()
 @end
 
@@ -89,12 +87,26 @@ static NSString *const GTChromeCallback = @"geotag://";
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    // open the object URL in Google Chrome browser in a mode that displays a back button in the browser
-    // that, when clicked, brings the user back to this app.
     NSDictionary *object = [_objects objectAtIndex:indexPath.item];
     NSURL *url = [[NSURL alloc] initWithString:object[@"url"]];
-    NSURL *callback = [[NSURL alloc] initWithString:GTChromeCallback];
-    [[OpenInChromeController sharedInstance] openInChrome:url withCallbackURL:callback createNewTab:YES];
+    
+    // Ideally open the content URL is Google Chrome which provides a back button that returns the user
+    // to this app. If Google Chrome isn't installed use the default browser.
+    // https://developers.google.com/chrome/mobile/docs/ios-links
+    BOOL success;
+    OpenInChromeController *chromeController = [OpenInChromeController sharedInstance];
+    if ([chromeController isChromeInstalled]) {
+        static NSString *const chromeCallbackURLString = @"sundowner://";
+        NSURL *callbackURL = [[NSURL alloc] initWithString:chromeCallbackURLString];
+        success = [[OpenInChromeController sharedInstance] openInChrome:url
+                                                        withCallbackURL:callbackURL
+                                                           createNewTab:YES];
+    } else {
+        success = [[UIApplication sharedApplication] openURL:url];
+    }
+    if (!success) {
+        NSLog(@"Failed to open URL in browser");
+    }
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath

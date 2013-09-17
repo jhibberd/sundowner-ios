@@ -37,10 +37,10 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>com.geotag</string>
+			<string>com.sundowner</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>geotag</string>
+				<string>sundowner</string>
 			</array>
 		</dict>
 	</array>
