@@ -12,7 +12,7 @@ static NSString *const GTChromeCallback = @"geotag://";
 @end
 
 @implementation SDObjectsViewController {
-    NSArray *_objects;
+    NSMutableArray *_objects;
 }
 
 - (void)viewDidLoad
@@ -27,7 +27,7 @@ static NSString *const GTChromeCallback = @"geotag://";
     // bottom padding as all table view cells have top padding but not bottom padding
     [self.tableView setContentInset:UIEdgeInsetsMake(0, 0, GTPaddingTopOuter, 0)];
     
-    _objects = @[];
+    _objects = [[NSMutableArray alloc] init];
     [self.tableView registerClass:[SDObjectCell class] forCellReuseIdentifier:@"Object"];
     
     // add handler for refreshing gesture
@@ -109,8 +109,20 @@ static NSString *const GTChromeCallback = @"geotag://";
     SDObjectCell *cell = (SDObjectCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier
                                                                          forIndexPath:indexPath];
     NSDictionary *object = [_objects objectAtIndex:indexPath.item];
+    cell.delegate = self;
     [cell setObject:object];
     return cell;
+}
+
+- (void)contentVotedDown:(NSDictionary *)content
+{
+    // animate the removal of the content from the table and remove it from content array
+    NSUInteger index = [_objects indexOfObject:content];
+    [self.tableView beginUpdates];
+    [_objects removeObjectAtIndex:index];
+    [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]]
+                          withRowAnimation:UITableViewRowAnimationRight];
+    [self.tableView endUpdates];
 }
 
 @end

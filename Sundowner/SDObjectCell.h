@@ -1,5 +1,6 @@
 
 #import <UIKit/UIKit.h>
+#import "SDObjectCellDelegate.h"
 
 extern CGFloat const GTTitleFontSize;
 extern CGFloat const GTNormalFontSize;
@@ -14,6 +15,7 @@ extern CGFloat const GTPaddingLeftOuter;
 extern CGFloat const GTPaddingRightOuter;
 
 @interface SDObjectCell : UITableViewCell
+@property (nonatomic, assign) id <SDObjectCellDelegate> delegate;
 @property (strong, nonatomic) UILabel *title;
 @property (strong, nonatomic) UILabel *author;
 + (CGFloat)estimateHeightForObject:(NSDictionary *)object constrainedByWidth:(CGFloat)width;
