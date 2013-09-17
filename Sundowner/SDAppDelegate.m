@@ -3,6 +3,8 @@
 #import "SDBestLocation.h"
 #import "SDLocation.h"
 #import "SDServer.h"
+#import "UIColor+SDColor.h"
+#import "UIImage+GTImage.h"
 
 @implementation SDAppDelegate
 
@@ -20,8 +22,8 @@
     [[NSUserDefaults standardUserDefaults] registerDefaults:defaultPrefs];
     
     // customize appearance of navigation bar to make it more minimalist and utilitarian
-    UIImage *shadowImage = [[UIImage alloc] init];
-    UIImage *navigationBackgroundImage = [UIImage imageNamed:@"grey_pixel.png"];
+    UIImage *shadowImage = [UIImage imageFromColor:[UIColor navigationBarShadowColor]];
+    UIImage *navigationBackgroundImage = [UIImage imageFromColor:[UIColor backgroundColor]];
     NSDictionary *textAttr = [NSDictionary dictionaryWithObjectsAndKeys:
                               [UIColor whiteColor],
                               UITextAttributeTextColor,
