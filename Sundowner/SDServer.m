@@ -29,7 +29,7 @@
 - (void)getObjectsForLocation:(CLLocationCoordinate2D)coordinate callback:(ServerCallback)callback
 {
     // define url request
-    NSString *url = [NSString stringWithFormat:@"http://%@:%d?longitude=%f&latitude=%f",
+    NSString *url = [NSString stringWithFormat:@"http://%@:%d/content?longitude=%f&latitude=%f&user_id=52396c4b1d41c8225583d47f",
                      [self getHost], PORT, coordinate.longitude, coordinate.latitude];
     NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]];
     
@@ -71,7 +71,7 @@
     }
     
     // define url request
-    NSString *urlString = [NSString stringWithFormat:@"http://%@:%d", [self getHost], PORT];
+    NSString *urlString = [NSString stringWithFormat:@"http://%@:%d/content", [self getHost], PORT];
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlString]];
     [request setHTTPMethod:@"POST"];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-type"];
