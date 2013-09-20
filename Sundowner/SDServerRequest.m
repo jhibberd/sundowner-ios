@@ -1,6 +1,7 @@
 
 #import "SDServer.h"
 #import "SDServerRequest.h"
+#import "SDToast.h"
 
 @implementation SDServerRequest {
     NSURLRequest *_request;
@@ -36,11 +37,7 @@
 - (void)error
 {
     [SDServer setNetworkActivityIndicatorVisible:NO];
-    [[[UIAlertView alloc] initWithTitle:@"Sundowner"
-                                message:@"Failed to connect to server"
-                               delegate:nil
-                      cancelButtonTitle:@"OK"
-                      otherButtonTitles:nil] show];
+    [SDToast toast:@"SERVER_ERROR"];
 }
 
 - (void)connection:(NSURLConnection*)connection didReceiveResponse:(NSURLResponse*)response

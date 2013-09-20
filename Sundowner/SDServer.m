@@ -3,8 +3,6 @@
 #import "SDServer.h"
 #import "SDServerRequest.h"
 
-static NSUInteger const kSDServerPort = 8050;
-
 @implementation SDServer
 
 # pragma mark - Class
@@ -92,7 +90,8 @@ static NSUInteger const kSDServerPort = 8050;
 {
     NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
     NSString *host = [defaults stringForKey:@"host"];
-    NSMutableString *urlString = [NSMutableString stringWithFormat:@"http://%@:%d", host, kSDServerPort];
+    NSString *port = [defaults stringForKey:@"port"];
+    NSMutableString *urlString = [NSMutableString stringWithFormat:@"http://%@:%@", host, port];
     
     va_list args;
     va_start(args, format);

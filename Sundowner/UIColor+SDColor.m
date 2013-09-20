@@ -22,7 +22,7 @@
     return [UIColor colorWithRed:238/255.0 green:238/255.0 blue:238/255.0 alpha:1];
 }
 
-+ (UIColor *)navigationBarShadowColor {
++ (UIColor *)backgroundTextColor {
     return [UIColor colorWithRed:220/255.0 green:220/255.0 blue:220/255.0 alpha:1];
 }
 

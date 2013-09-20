@@ -2,6 +2,7 @@
 #import "SDAppDelegate.h"
 #import "SDContentCell.h"
 #import "SDReadViewController.h"
+#import "SDToast.h"
 #import "OpenInChromeController.h"
 #import "UIBarButtonItem+SDBarButtonItem.h"
 #import "UIColor+SDColor.h"
@@ -11,12 +12,20 @@
 
 @implementation SDReadViewController {
     NSMutableArray *_content;
+    UILabel *_noContentLabel;
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.title = NSLocalizedString(@"READ_TITLE", nil);
     [self.tableView setBackgroundColor:[UIColor backgroundColor]];
+    
+    // construct the label to show when there is no content available nearby
+    _noContentLabel = [[UILabel alloc] init];
+    _noContentLabel.text = NSLocalizedString(@"NO_CONTENT", nil);
+    _noContentLabel.textAlignment = NSTextAlignmentCenter;
+    _noContentLabel.textColor = [UIColor backgroundTextColor];
     
     // compose button in navigation bar        
     UIBarButtonItem *composeItem = [UIBarButtonItem itemComposeForTarget:self action:@selector(composeButtonWasClicked)];
@@ -72,14 +81,21 @@
         [app.server getContentNearby:currentLocation.coordinate
                                 user:userId
                             callback:^(NSDictionary *response) {
-                                     
-            _content = response[@"data"];
-            [self.tableView reloadData];
-            
-            // stop refresh animation if one is in progress
-            if (self.refreshControl.refreshing)
-                [self.refreshControl endRefreshing];
-        }];
+                                
+                                _content = response[@"data"];
+                                [self.tableView reloadData];
+                                
+                                // display no content label if necessary
+                                UIView *expectedBackgroundView = [_content count] > 0 ? nil : _noContentLabel;
+                                if (self.tableView.backgroundView != expectedBackgroundView) {
+                                    self.tableView.backgroundView = expectedBackgroundView;
+                                }
+                                
+                                // stop refresh animation if one is in progress
+                                if (self.refreshControl.refreshing)
+                                    [self.refreshControl endRefreshing];
+                                
+                            }];
     }];
 }
 
@@ -131,6 +147,8 @@
 
 - (void)contentVotedUp:(NSDictionary *)content
 {
+    [SDToast toast:@"SERVER_ERROR"];
+    
     /*
      // notify the server
      NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
@@ -138,6 +156,7 @@
      SDAppDelegate *app = [UIApplication sharedApplication].delegate;
      [app.server vote:SDVoteUp content:content[@"id"] user:userId callback:^(NSDictionary *response) {
      // TODO check response code and alert user if failure.
+     // TODO what happens if the server returns a 400?
      }];
      */
 }

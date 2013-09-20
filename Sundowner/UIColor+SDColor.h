@@ -6,5 +6,5 @@
 + (UIColor *)linkColor;
 + (UIColor *)likeColor;
 + (UIColor *)backgroundColor;
-+ (UIColor *)navigationBarShadowColor;
++ (UIColor *)backgroundTextColor;
 @end

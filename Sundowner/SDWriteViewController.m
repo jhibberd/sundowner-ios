@@ -26,6 +26,7 @@ static CGFloat const kSDTopContentInset = 5;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.title = NSLocalizedString(@"WRITE_TITLE", nil);
     [self.view setBackgroundColor:[UIColor backgroundColor]];
     
     // add buttons to the navigation bar

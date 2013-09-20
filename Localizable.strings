@@ -1,0 +1,5 @@
+"SERVER_ERROR" = "Our server is having some trouble";
+"OK" = "OK";
+"NO_CONTENT" = "Nothing :(";
+"READ_TITLE" = "Nearby";
+"WRITE_TITLE" = "Share";

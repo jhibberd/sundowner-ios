@@ -22,10 +22,10 @@
     [[NSUserDefaults standardUserDefaults] registerDefaults:defaultPrefs];
     
     // customize appearance of navigation bar to make it more minimalist and utilitarian
-    UIImage *shadowImage = [UIImage imageFromColor:[UIColor navigationBarShadowColor]];
+    UIImage *shadowImage = [UIImage imageFromColor:[UIColor backgroundTextColor]];
     UIImage *navigationBackgroundImage = [UIImage imageFromColor:[UIColor backgroundColor]];
     NSDictionary *textAttr = [NSDictionary dictionaryWithObjectsAndKeys:
-                              [UIColor navigationBarShadowColor],
+                              [UIColor backgroundTextColor],
                               UITextAttributeTextColor,
                               [UIColor clearColor],
                               UITextAttributeTextShadowColor ,
