@@ -8,6 +8,7 @@
 #import "UIColor+SDColor.h"
 
 static CGFloat GTTextViewInherentPadding = 8;
+static CGFloat const kSDTopContentInset = 5;
 
 @interface SDWriteViewController ()
 @end
@@ -64,9 +65,9 @@ static CGFloat GTTextViewInherentPadding = 8;
     NSString *username = [[[NSUserDefaults class] standardUserDefaults] stringForKey:@"username"];
     _authorText = [NSString stringWithFormat:@"by %@", username];
     _author = [[UILabel alloc] init];
-    [_author setFont:[UIFont systemFontOfSize:GTNormalFontSize]];
+    _author.font = [UIFont systemFontOfSize:GTNormalFontSize];
     _author.textColor = [UIColor lightGrayColor];
-    [_author setText:_authorText];
+    _author.text = _authorText;
     [_card addSubview:_author];
     
     // create URL field
@@ -124,10 +125,10 @@ static CGFloat GTTextViewInherentPadding = 8;
     [_urlField setFrame:CGRectMake(GTPaddingLeftInner, yAxisCursor, width, urlFieldHeight)];
     
     // update card view
-    CGFloat cardHeight = GTPaddingTopOuter + contentFrame.size.height + authorHeight +
-                         urlFieldHeight + GTPaddingTopOuter; // TODO confusing!
+    CGFloat cardHeight = GTPaddingTopInner + contentFrame.size.height + authorHeight +
+                         urlFieldHeight + GTPaddingBottomInner;
     _card.frame = CGRectMake(GTPaddingLeftOuter,
-                             GTPaddingTopOuter,
+                             kSDTopContentInset + GTPaddingTopOuter,
                              self.view.frame.size.width - (GTPaddingLeftOuter + GTPaddingRightOuter),
                              cardHeight);
 }
@@ -232,20 +233,21 @@ static CGFloat GTTextViewInherentPadding = 8;
     [_acceptButton setEnabled:NO];
     [_backButton setEnabled:NO];
     
-    NSString *username = [[[NSUserDefaults class] standardUserDefaults] stringForKey:@"username"];
-    
     // first obtain the device's current location then post the object to the server
+    NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
+    NSString *userId = [defaults stringForKey:@"userId"];
     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
     CLLocation *bestLocation = [app.location2 stopUpdatingLocationAndReturnBest];
     [app.server setContent:content
-                   withURL:url
-                atLocation:bestLocation
-                    byUser:username
+                       url:url
+                  location:bestLocation
+                      user:userId
                   callback:^(NSDictionary *response) {
                      
-                     // TODO check response
-                     [self closeView];
-                 }];
+                      // TODO check response
+                      // TODO if fail alert user, reanable buttons and stay on view
+                      [self closeView];
+                  }];
 }
 
 - (void)closeView

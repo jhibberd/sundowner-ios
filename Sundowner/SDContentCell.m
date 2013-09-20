@@ -1,6 +1,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 #import "SDContentCell.h"
+#import "SDLikeView.h"
 #import "UIColor+SDColor.h"
 
 CGFloat const GTTitleFontSize =         22;
@@ -10,13 +11,17 @@ CGFloat const GTPaddingTopInner =       10;
 CGFloat const GTPaddingBottomInner =    10;
 CGFloat const GTPaddingLeftInner =      10;
 CGFloat const GTPaddingRightInner =     10;
-CGFloat const GTPaddingTopOuter =       10;
-CGFloat const GTPaddingBottomOuter =    0;
+CGFloat const GTPaddingTopOuter =       5;
+CGFloat const GTPaddingBottomOuter =    5;
 CGFloat const GTPaddingLeftOuter =      10;
 CGFloat const GTPaddingRightOuter =     10;
 
+// this aspect ratio must be maintained for correct shape proportion (original 110x95)
+static NSUInteger const kSDLikeViewWidth =      77;
+static NSUInteger const kSDLikeViewHeight =     66.5;
+
 @implementation SDContentCell {
-    NSDictionary *_object;
+    NSDictionary *_content;
     UIView *_card;
     
     // for managing the horizontal scrolling (voting down) of content
@@ -60,10 +65,11 @@ CGFloat const GTPaddingRightOuter =     10;
     if (self) {
         
         [self setSelectionStyle:UITableViewCellSelectionStyleNone];
+        self.backgroundColor = [UIColor backgroundColor];
         
         _card = [[UIView alloc] init];
         [_card setBackgroundColor:[UIColor whiteColor]];
-        [_card.layer setCornerRadius:3.0f];
+        _card.layer.cornerRadius = 3.0;
         [self addSubview:_card];
         
         self.title = [[UILabel alloc] init];
@@ -89,13 +95,46 @@ CGFloat const GTPaddingRightOuter =     10;
         singleTapGestureRecogniser.numberOfTapsRequired = 1;
         [self addGestureRecognizer:singleTapGestureRecogniser];
         
+        UITapGestureRecognizer *doubleTapGestureRecogniser =
+        [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(respondToDoubleTapGesture:)];
+        doubleTapGestureRecogniser.numberOfTapsRequired = 2;
+        [self addGestureRecognizer:doubleTapGestureRecogniser];
+        
+        // single and double tap gestures are mutually exclusive; the cost of this is a slight delay in
+        // responding to single taps
+        [singleTapGestureRecogniser requireGestureRecognizerToFail:doubleTapGestureRecogniser];
     }
     return self;
 }
 
-- (void)respondToSingleTapGesture:(UITapGestureRecognizer *)recognizer
+- (void)respondToDoubleTapGesture:(UIGestureRecognizer *)recognizer
+{    
+    // notify the delegate that content has been vote up (so that it can notify the server)
+    [self.delegate contentVotedUp:_content];
+    
+    // add the like view to the content view
+    SDLikeView *likeView = [[SDLikeView alloc] initWithFrame:CGRectMake(0, 0, kSDLikeViewWidth, kSDLikeViewHeight)];
+    likeView.center = CGPointMake(self.bounds.size.width / 2, self.bounds.size.height / 2);
+    likeView.alpha = 0;
+    likeView.transform = CGAffineTransformMakeScale(0.5, 0.5);
+    [self addSubview:likeView];
+
+    // animate it
+    [UIView animateWithDuration:.15 animations:^{
+        likeView.transform = CGAffineTransformMakeScale(1.0, 1.0);
+        likeView.alpha = 1.0;
+    } completion:^(BOOL finished) {
+        [UIView animateWithDuration:1.0 animations:^{
+            likeView.alpha = 0;
+        } completion:^(BOOL finished) {
+            [likeView removeFromSuperview];
+        }];
+    }];
+}
+
+- (void)respondToSingleTapGesture:(UIGestureRecognizer *)recognizer
 {
-    [self.delegate contentURLRequested:_object];
+    [self.delegate contentURLRequested:_content];
 }
 
 - (void)respondToPanGesture:(UIPanGestureRecognizer *)recognizer
@@ -123,7 +162,7 @@ CGFloat const GTPaddingRightOuter =     10;
         case UIGestureRecognizerStateEnded: {
             if (_voteDownOnDragRelease) {
                 // inform the containing table that the content has been voted down so that it can be removed
-                [self.delegate contentVotedDown:_object];
+                [self.delegate contentVotedDown:_content];
             } else {
                 // return the content to its original position
                 [UIView animateWithDuration:0.2 animations:^{
@@ -138,27 +177,32 @@ CGFloat const GTPaddingRightOuter =     10;
     }
 }
 
-- (BOOL)gestureRecognizerShouldBegin:(UIPanGestureRecognizer *)recognizer
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)recognizer
 {
-    // prevent vertical scrolling otherwise table scrolling won't work
-    // only allow content to be scrolled to the right
-    CGPoint translation = [recognizer translationInView:self];
-    return fabs(translation.x) > fabs(translation.y) && translation.x > 0;
+    // prevent vertical scrolling otherwise table scrolling won't work only allow
+    // content to be scrolled to the right
+    if ([recognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
+        CGPoint translation = [(UIPanGestureRecognizer *)recognizer translationInView:self];
+        return fabs(translation.x) > fabs(translation.y) && translation.x > 0;
+        
+    } else {
+        return YES;
+    }
 }
 
-- (void)setObject:(NSDictionary *)object
+- (void)setContent:(NSDictionary *)content
 {
-    _object = object;
+    _content = content;
     [self layoutSubviews];
 }
 
 - (void)layoutSubviews
 {
-    NSString *titleText = _object[@"title"];
-    BOOL hasURL = _object[@"url"] != nil;
-    NSString *authorText = [[self class] constructAuthorString:_object];
+    NSString *titleText = _content[@"title"];
+    BOOL hasURL = _content[@"url"] != nil;
+    NSString *authorText = [[self class] constructAuthorString:_content];
     CGFloat widthConstraint = self.frame.size.width -
-    (GTPaddingLeftInner + GTPaddingRightInner + GTPaddingLeftOuter + GTPaddingRightOuter);
+        (GTPaddingLeftInner + GTPaddingRightInner + GTPaddingLeftOuter + GTPaddingRightOuter);
     
     CGFloat titleHeight = [[self class] estimateHeightForTitle:titleText constrainedByWidth:widthConstraint];
     CGFloat authorHeight = [[self class] estimateHeightForAuthor:authorText constrainedByWidth:widthConstraint];

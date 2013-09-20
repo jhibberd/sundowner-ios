@@ -10,7 +10,7 @@
 @end
 
 @implementation SDReadViewController {
-    NSMutableArray *_objects;
+    NSMutableArray *_content;
 }
 
 - (void)viewDidLoad
@@ -22,18 +22,17 @@
     UIBarButtonItem *composeItem = [UIBarButtonItem itemComposeForTarget:self action:@selector(composeButtonWasClicked)];
     [self.navigationItem setRightBarButtonItem:composeItem];
     
-    // bottom padding as all table view cells have top padding but not bottom padding
-    [self.tableView setContentInset:UIEdgeInsetsMake(0, 0, GTPaddingTopOuter, 0)];
+    [self.tableView setContentInset:UIEdgeInsetsMake(GTPaddingTopOuter, 0, GTPaddingBottomOuter, 0)];
     
-    _objects = [[NSMutableArray alloc] init];
+    _content = [[NSMutableArray alloc] init];
     [self.tableView registerClass:[SDContentCell class] forCellReuseIdentifier:@"Object"];
     
     // add handler for refreshing gesture
     [self.refreshControl addTarget:self
-                            action:@selector(refreshObjects)
+                            action:@selector(refreshContent)
                   forControlEvents:UIControlEventValueChanged];
     
-    [self refreshObjects];
+    [self refreshContent];
 }
 
 - (void)composeButtonWasClicked
@@ -60,17 +59,21 @@
 
 - (void)applicationWillEnterForeground:(NSNotification *)notification
 {
-    [self refreshObjects];
+    [self refreshContent];
 }
 
-- (void)refreshObjects
+- (void)refreshContent
 {
+    NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
+    NSString *userId = [defaults stringForKey:@"userId"];
     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
+    
     [app.location getCurrentLocationThen:^(CLLocation *currentLocation) {
-        [app.server getObjectsForLocation:currentLocation.coordinate
-                                 callback:^(NSDictionary *response) {
+        [app.server getContentNearby:currentLocation.coordinate
+                                user:userId
+                            callback:^(NSDictionary *response) {
                                      
-            _objects = response[@"data"];
+            _content = response[@"data"];
             [self.tableView reloadData];
             
             // stop refresh animation if one is in progress
@@ -82,11 +85,9 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [_objects count];
+    return [_content count];
 }
 
-
-//- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 - (void)contentURLRequested:(NSDictionary *)content
 {
     //NSDictionary *object = [_objects objectAtIndex:indexPath.item];
@@ -113,7 +114,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSDictionary *object = [_objects objectAtIndex:indexPath.item];
+    NSDictionary *object = [_content objectAtIndex:indexPath.item];
     return [SDContentCell estimateHeightForObject:object constrainedByWidth:tableView.frame.size.width];
 }
 
@@ -121,22 +122,45 @@
 {
     static NSString *CellIdentifier = @"Object";
     SDContentCell *cell = (SDContentCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier
-                                                                         forIndexPath:indexPath];
-    NSDictionary *object = [_objects objectAtIndex:indexPath.item];
+                                                                           forIndexPath:indexPath];
+    NSDictionary *object = [_content objectAtIndex:indexPath.item];
     cell.delegate = self;
-    [cell setObject:object];
+    [cell setContent:object];
     return cell;
+}
+
+- (void)contentVotedUp:(NSDictionary *)content
+{
+    /*
+     // notify the server
+     NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
+     NSString *userId = [defaults stringForKey:@"userId"];
+     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
+     [app.server vote:SDVoteUp content:content[@"id"] user:userId callback:^(NSDictionary *response) {
+     // TODO check response code and alert user if failure.
+     }];
+     */
 }
 
 - (void)contentVotedDown:(NSDictionary *)content
 {
-    // animate the removal of the content from the table and remove it from content array
-    NSUInteger index = [_objects indexOfObject:content];
+    // animate the removal of the content from the table and remove it from the content array
+    NSUInteger index = [_content indexOfObject:content];
     [self.tableView beginUpdates];
-    [_objects removeObjectAtIndex:index];
+    [_content removeObjectAtIndex:index];
     [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]]
                           withRowAnimation:UITableViewRowAnimationRight];
     [self.tableView endUpdates];
+    
+    /*
+    // notify the server
+    NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
+    NSString *userId = [defaults stringForKey:@"userId"];
+    SDAppDelegate *app = [UIApplication sharedApplication].delegate;
+    [app.server vote:SDVoteDown content:content[@"id"] user:userId callback:^(NSDictionary *response) {
+        // TODO check response code and alert user if failure.
+    }];
+     */
 }
 
 @end

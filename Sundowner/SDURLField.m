@@ -7,17 +7,17 @@ static NSString *kGTInfoText = @"To link this message to a webpage, copy a URL i
 static CGFloat kGTURLPaddingTop = 15;
 static CGFloat kGTMaxVisibleURLLength = 70;
 
-typedef NS_ENUM(NSInteger, GTState) {
-    GTUninitialized,
-    GTStateLinked,
-    GTStateLinkable,
-    GTStateUnlinked
-};
+typedef enum {
+    SDUninitialized,
+    SDStateLinked,
+    SDStateLinkable,
+    SDStateUnlinked
+} SDState;
 
 @implementation SDURLField {
     UILabel *_label;
     NSString *_candidateURL;
-    GTState _state;
+    SDState _state;
     CGFloat _width;
     id <SDURLFieldDelegate> _delegate;
 }
@@ -38,7 +38,7 @@ typedef NS_ENUM(NSInteger, GTState) {
         [self addSubview:_label];
         
         // setup initial unlinked state
-        _state = GTUninitialized;
+        _state = SDUninitialized;
         _candidateURL = nil;
         self.url = nil;
         [self addTarget:self action:@selector(buttonWasClicked:) forControlEvents:UIControlEventTouchUpInside];
@@ -51,15 +51,15 @@ typedef NS_ENUM(NSInteger, GTState) {
     NSString *pasteboardURL = [self getURLFromPasteboard];
 
     // determine the state that the control should be in
-    GTState correctState;
+    SDState correctState;
     if (_url == nil) {
         if (pasteboardURL == nil) {
-            correctState = GTStateUnlinked;
+            correctState = SDStateUnlinked;
         } else {
-            correctState = GTStateLinkable;
+            correctState = SDStateLinkable;
         }
     } else {
-        correctState = GTStateLinked;
+        correctState = SDStateLinked;
     }
     
     BOOL candidateURLHasChanged = ![_candidateURL isEqualToString:pasteboardURL];
@@ -70,7 +70,7 @@ typedef NS_ENUM(NSInteger, GTState) {
     // initiate a change to a new GTStateLinkable.    
     BOOL needsUpdating = NO;
     if (_state == correctState) {
-        if (_state == GTStateLinkable && candidateURLHasChanged) {
+        if (_state == SDStateLinkable && candidateURLHasChanged) {
             needsUpdating = YES;
         }
     } else {
@@ -82,16 +82,16 @@ typedef NS_ENUM(NSInteger, GTState) {
     
     // change to the correct state
     switch (correctState) {
-        case GTStateLinked:
+        case SDStateLinked:
             [self setupStateLinked];
             break;
-        case GTStateLinkable:
+        case SDStateLinkable:
             [self setupStateLinkable];
             break;
-        case GTStateUnlinked:
+        case SDStateUnlinked:
             [self setupStateUnlinked];
             break;
-        case GTUninitialized:
+        case SDUninitialized:
             NSAssert(NO, @"Should always have an initialised state at this point");
     }
 }
@@ -114,7 +114,7 @@ typedef NS_ENUM(NSInteger, GTState) {
 - (void)buttonWasClicked:(UIButton *)sender
 {
     // link to a URL
-    if (_state == GTStateLinked) {
+    if (_state == SDStateLinked) {
         _url = nil;
         if (_candidateURL == nil) {
             [self setupStateUnlinked];
@@ -123,7 +123,7 @@ typedef NS_ENUM(NSInteger, GTState) {
         }
     
     // unlink from a URL
-    } else if (_state == GTStateLinkable) {
+    } else if (_state == SDStateLinkable) {
         _url = _candidateURL;
         [self setupStateLinked];
     }
@@ -131,7 +131,7 @@ typedef NS_ENUM(NSInteger, GTState) {
 
 - (void)setupStateLinked
 {
-    _state = GTStateLinked;
+    _state = SDStateLinked;
 
     NSString *stringLine1 = [NSString stringWithFormat:@"Linked to %@", [self cropURL:_url]];
     NSString *stringLine2 = @"Unlink";
@@ -148,7 +148,7 @@ typedef NS_ENUM(NSInteger, GTState) {
 
 - (void)setupStateLinkable
 {    
-    _state = GTStateLinkable;
+    _state = SDStateLinkable;
     
     NSString *string = [NSString stringWithFormat:@"Link to %@", [self cropURL:_candidateURL]];
     NSDictionary *attr = @{NSForegroundColorAttributeName: [UIColor linkColor]};
@@ -158,7 +158,7 @@ typedef NS_ENUM(NSInteger, GTState) {
 
 - (void)setupStateUnlinked
 {
-    _state = GTStateUnlinked;
+    _state = SDStateUnlinked;
     
     NSDictionary *attr = @{NSForegroundColorAttributeName: [UIColor lightGrayColor]};
     NSAttributedString *attrString = [[NSAttributedString alloc] initWithString:kGTInfoText attributes:attr];
@@ -169,7 +169,7 @@ typedef NS_ENUM(NSInteger, GTState) {
 {
     // When the text contains a URL we need to use NSLineBreakByCharWrapping otherwise the measuring of text
     // doesn't work. The rest of the time use NSLineBreakByWordWrapping for more natural wrapping.
-    NSLineBreakMode lineBreakMode = _state == GTStateUnlinked ? NSLineBreakByWordWrapping : NSLineBreakByCharWrapping;
+    NSLineBreakMode lineBreakMode = _state == SDStateUnlinked ? NSLineBreakByWordWrapping : NSLineBreakByCharWrapping;
     
     CGSize constraint = CGSizeMake(_width, INT_MAX);
     CGSize size = [text.string sizeWithFont:[UIFont systemFontOfSize:GTNormalFontSize]

@@ -19,5 +19,5 @@ extern CGFloat const GTPaddingRightOuter;
 @property (strong, nonatomic) UILabel *title;
 @property (strong, nonatomic) UILabel *author;
 + (CGFloat)estimateHeightForObject:(NSDictionary *)object constrainedByWidth:(CGFloat)width;
-- (void)setObject:(NSDictionary *)object;
+- (void)setContent:(NSDictionary *)object;
 @end

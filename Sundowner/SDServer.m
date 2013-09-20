@@ -3,12 +3,9 @@
 #import "SDServer.h"
 #import "SDServerRequest.h"
 
-#define PORT 8050
+static NSUInteger const kSDServerPort = 8050;
 
-@implementation SDServer {
-    NSString *_venueId;
-    NSString *_deviceId;
-}
+@implementation SDServer
 
 # pragma mark - Class
 
@@ -26,69 +23,108 @@
 
 # pragma mark - Public
 
-- (void)getObjectsForLocation:(CLLocationCoordinate2D)coordinate callback:(ServerCallback)callback
+- (void)getContentNearby:(CLLocationCoordinate2D)coordinate
+                    user:(NSString *)userId
+                callback:(ServerCallback)callback
 {
-    // define url request
-    NSString *url = [NSString stringWithFormat:@"http://%@:%d/content?longitude=%f&latitude=%f&user_id=52396c4b1d41c8225583d47f",
-                     [self getHost], PORT, coordinate.longitude, coordinate.latitude];
-    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]];
-    
-    // issue request to server
-    SDServerRequest *serverRequest = [[SDServerRequest alloc] initWithRequest:urlRequest callback:callback];
+    NSURLRequest *request = [self createRequestForEndpoint:@"/content?longitude=%f&latitude=%f&user_id=%@",
+                             coordinate.longitude, coordinate.latitude, userId];
+    SDServerRequest *serverRequest = [[SDServerRequest alloc] initWithRequest:request callback:callback];
     [serverRequest request];
 }
 
 - (void)setContent:(NSString *)content
-           withURL:(NSString *)url
-        atLocation:(CLLocation *)location
-            byUser:(NSString *)username
+               url:(NSString *)url
+          location:(CLLocation *)location
+              user:(NSString *)userId
           callback:(ServerCallback)callback
 {    
-    // define request body
     CLLocationDegrees longitude =   location.coordinate.longitude;
     CLLocationDegrees latitude =    location.coordinate.latitude;
     CLLocationAccuracy accuracy =   location.horizontalAccuracy;
     NSMutableDictionary *data = [@{
-                                 @"longitude":    [NSNumber numberWithDouble:longitude],
-                                 @"latitude":     [NSNumber numberWithDouble:latitude],
-                                 @"accuracy":     [NSNumber numberWithDouble:accuracy],
-                                 @"username":     username,
-                                 @"title":        content}
+                                 @"longitude":      [NSNumber numberWithDouble:longitude],
+                                 @"latitude":       [NSNumber numberWithDouble:latitude],
+                                 @"accuracy":       [NSNumber numberWithDouble:accuracy],
+                                 @"user_id":        userId,
+                                 @"title":          content}
                                  mutableCopy];
     if (url != nil) {
         [data setObject:url forKey:@"url"];
     }
-    NSError *serializationError = nil;
-    NSData *serializedData = [NSJSONSerialization dataWithJSONObject:data options:0 error:&serializationError];
-    if (!serializedData || serializationError) {
-        NSLog(@"Failed to serialize data object.");
-        return;
-    }
-    NSString *encodedData = [[NSString alloc] initWithData:serializedData encoding:NSUTF8StringEncoding];
-    if (!encodedData) {
-        NSLog(@"Failed to encode serialized data.");
+    NSString *payload = [self jsonEncode:data];
+    if (!payload) {
+        NSLog(@"failed to json encode payload");
         return;
     }
     
-    // define url request
-    NSString *urlString = [NSString stringWithFormat:@"http://%@:%d/content", [self getHost], PORT];
-    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlString]];
-    [request setHTTPMethod:@"POST"];
-    [request setValue:@"application/json" forHTTPHeaderField:@"Content-type"];
-    [request setValue:[NSString stringWithFormat:@"%d", [encodedData length]] forHTTPHeaderField:@"Content-length"];
-    [request setHTTPBody:[encodedData dataUsingEncoding:NSUTF8StringEncoding]];
+    NSMutableURLRequest *request = [self createRequestForEndpoint:@"/content"];
+    [self preparePostRequest:request withPayload:payload];
     
-    // issue request to server
+    SDServerRequest *serverRequest = [[SDServerRequest alloc] initWithRequest:request callback:callback];
+    [serverRequest request];
+}
+
+- (void)vote:(SDVote)vote
+     content:(NSString *)contentId
+        user:(NSString *)userId
+    callback:(ServerCallback)callback
+{
+    NSDictionary *data = @{@"content_id":   contentId,
+                           @"user_id":      userId,
+                           @"vote":         @(vote)};
+    NSString *payload = [self jsonEncode:data];
+    if (!payload) {
+        NSLog(@"failed to json encode payload");
+        return;
+    }
+    
+    NSMutableURLRequest *request = [self createRequestForEndpoint:@"/votes"];
+    [self preparePostRequest:request withPayload:payload];
+    
     SDServerRequest *serverRequest = [[SDServerRequest alloc] initWithRequest:request callback:callback];
     [serverRequest request];
 }
 
 # pragma mark - Private
 
-- (NSString *)getHost
+- (NSMutableURLRequest *)createRequestForEndpoint:(NSString *)format, ...
 {
     NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
-    return [defaults stringForKey:@"host"];
+    NSString *host = [defaults stringForKey:@"host"];
+    NSMutableString *urlString = [NSMutableString stringWithFormat:@"http://%@:%d", host, kSDServerPort];
+    
+    va_list args;
+    va_start(args, format);
+    NSString *endpoint = [[NSString alloc] initWithFormat:format arguments:args];
+    va_end(args);
+    [urlString appendString:endpoint];
+    
+    return [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlString]];
+}
+
+- (NSString *)jsonEncode:(NSDictionary *)object
+{
+    NSError *serializationError = nil;
+    NSData *serializedObject = [NSJSONSerialization dataWithJSONObject:object options:0 error:&serializationError];
+    if (!serializedObject || serializationError) {
+        NSLog(@"failed to serialize data object");
+        return nil;
+    }
+    NSString *encodedObject = [[NSString alloc] initWithData:serializedObject encoding:NSUTF8StringEncoding];
+    if (!encodedObject) {
+        NSLog(@"failed to encode serialized data");
+        return nil;
+    }
+    return encodedObject;
+}
+
+- (void)preparePostRequest:(NSMutableURLRequest *)request withPayload:(NSString *)payload
+{
+    [request setHTTPMethod:@"POST"];
+    [request setValue:@"application/json" forHTTPHeaderField:@"Content-type"];
+    [request setValue:[NSString stringWithFormat:@"%d", [payload length]] forHTTPHeaderField:@"Content-length"];
+    [request setHTTPBody:[payload dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
 @end

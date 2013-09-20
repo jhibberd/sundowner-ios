@@ -4,12 +4,23 @@
 
 typedef void(^ServerCallback)(NSDictionary *response);
 
+typedef enum {
+    SDVoteDown = 0,
+    SDVoteUp,
+} SDVote;
+
 @interface SDServer : NSObject
 + (void)setNetworkActivityIndicatorVisible:(BOOL)setVisible;
-- (void)getObjectsForLocation:(CLLocationCoordinate2D)coordinate callback:(ServerCallback)callback;
+- (void)getContentNearby:(CLLocationCoordinate2D)coordinate
+                    user:(NSString *)userId
+                callback:(ServerCallback)callback;
 - (void)setContent:(NSString *)content
-           withURL:(NSString *)url
-        atLocation:(CLLocation *)location
-            byUser:(NSString *)username
+               url:(NSString *)url
+          location:(CLLocation *)location
+              user:(NSString *)userId
           callback:(ServerCallback)callback;
+- (void)vote:(SDVote)vote
+     content:(NSString *)contentId
+        user:(NSString *)userId
+    callback:(ServerCallback)callback;
 @end

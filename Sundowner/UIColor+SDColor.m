@@ -14,6 +14,10 @@
     return [UIColor colorWithRed:62/255.0 green:154/255.0 blue:201/255.0 alpha:1];
 }
 
++ (UIColor *)likeColor {
+    return [UIColor colorWithRed:235/255.0 green:91/255.0 blue:84/255.0 alpha:1];
+}
+
 + (UIColor *)backgroundColor {
     return [UIColor colorWithRed:238/255.0 green:238/255.0 blue:238/255.0 alpha:1];
 }

@@ -25,7 +25,7 @@
     UIImage *shadowImage = [UIImage imageFromColor:[UIColor navigationBarShadowColor]];
     UIImage *navigationBackgroundImage = [UIImage imageFromColor:[UIColor backgroundColor]];
     NSDictionary *textAttr = [NSDictionary dictionaryWithObjectsAndKeys:
-                              [UIColor whiteColor],
+                              [UIColor navigationBarShadowColor],
                               UITextAttributeTextColor,
                               [UIColor clearColor],
                               UITextAttributeTextShadowColor ,
