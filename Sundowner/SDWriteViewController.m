@@ -3,12 +3,14 @@
 #import "SDAppDelegate.h"
 #import "SDContentCell.h"
 #import "SDWriteViewController.h"
+#import "SDToast.h"
 #import "SDURLField.h"
 #import "UIBarButtonItem+SDBarButtonItem.h"
 #import "UIColor+SDColor.h"
 
 static CGFloat GTTextViewInherentPadding = 8;
-static CGFloat const kSDTopContentInset = 5;
+//static CGFloat const kSDTopContentInset = 5; // iOS 6.1
+static CGFloat const kSDTopContentInset = 70; // iOS 7
 
 @interface SDWriteViewController ()
 @end
@@ -31,14 +33,14 @@ static CGFloat const kSDTopContentInset = 5;
     
     // add buttons to the navigation bar
     _acceptButton = [UIBarButtonItem itemAcceptForTarget:self action:@selector(acceptButtonWasClicked)];
-    [self.navigationItem setRightBarButtonItem:_acceptButton];
     _backButton = [UIBarButtonItem itemBackForTarget:self action:@selector(backButtonWasClicked)];
+    [self.navigationItem setRightBarButtonItem:_acceptButton];
     [self.navigationItem setLeftBarButtonItem:_backButton];
     
     // card view
     _card = [[UIView alloc] init];
-    [_card setBackgroundColor:[UIColor whiteColor]];
-    [_card.layer setCornerRadius:3.0f];
+    _card.backgroundColor = [UIColor whiteColor];
+    _card.layer.cornerRadius = 3.0f;
     [self.view addSubview:_card];
     
     // Measure the size of a single line of content text, to be used as the starting height of the content
@@ -52,10 +54,10 @@ static CGFloat const kSDTopContentInset = 5;
     _contentTextView = [[UITextView alloc] init];
     CGRect contentFrame = CGRectMake(GTPaddingLeftInner, GTPaddingTopInner, width, contentHeight);
     contentFrame = [self adjustContentViewFrameToActualPosition:contentFrame];
-    [_contentTextView setFrame:contentFrame];
-    [_contentTextView setFont:[UIFont systemFontOfSize:GTTitleFontSize]];;
-    [_contentTextView setDelegate:self];
-    _contentTextView.backgroundColor = [UIColor clearColor];
+    _contentTextView.frame = contentFrame;
+    _contentTextView.font = [UIFont systemFontOfSize:GTTitleFontSize];
+    _contentTextView.delegate = self;
+    _contentTextView.backgroundColor = [UIColor redColor]; //[UIColor clearColor];
     [_card addSubview:_contentTextView];
     
     // without this, when the content view is resizing to fit new content, the content is scrolled upwards before
@@ -258,11 +260,7 @@ static CGFloat const kSDTopContentInset = 5;
 
 - (void)failedToGetBestLocation
 {
-    [[[UIAlertView alloc] initWithTitle:nil
-                                message:@"Unable to find your current location"
-                               delegate:nil
-                      cancelButtonTitle:@"OK"
-                      otherButtonTitles:nil] show];
+    [SDToast toast:@"CANNOT_GET_LOCATION"];
     [self closeView];
 }
 

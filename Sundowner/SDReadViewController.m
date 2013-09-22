@@ -124,7 +124,7 @@
         success = [[UIApplication sharedApplication] openURL:url];
     }
     if (!success) {
-        NSLog(@"Failed to open URL in browser");
+        [SDToast toast:@"CANNOT_OPEN_URL"];
     }
 }
 
@@ -171,6 +171,7 @@
                           withRowAnimation:UITableViewRowAnimationRight];
     [self.tableView endUpdates];
     
+    // I think below the callback can be nil and let the SDServerRequest object handle any errors
     /*
     // notify the server
     NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
