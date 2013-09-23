@@ -1,8 +1,6 @@
 
 #import <UIKit/UIKit.h>
 #import "SDBestLocationDelegate.h"
-#import "SDURLFieldDelegate.h"
 
-@interface SDWriteViewController : UIViewController
-    <SDBestLocationDelegate, SDURLFieldDelegate, UITextViewDelegate>
+@interface SDWriteViewController : UIViewController <SDBestLocationDelegate>
 @end
