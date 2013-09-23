@@ -3,13 +3,13 @@
 #import "SDAcceptIconView.h"
 #import "SDBackIconView.h"
 #import "SDComposeIconView.h"
+#import "SystemVersion.h"
 
 @implementation UIBarButtonItem (SDBarButtonItem)
 
 // as per the iOS Human Interface Guidelines
 // https://developer.apple.com/library/ios/documentation/UserExperience/Conceptual/MobileHIG/IconsImages/IconsImages.html
 static CGFloat const kGTIconSize = 20;
-static CGFloat const kGTIconButtonHorizontalPadding = 10;
 static CGFloat const kGTIconButtonVerticalPadding = 5;
 
 # pragma mark - Public
@@ -49,7 +49,7 @@ static CGFloat const kGTIconButtonVerticalPadding = 5;
     [view setUserInteractionEnabled:NO];
     
     // reposition the view within the button to account for the padding
-    view.frame = CGRectMake(kGTIconButtonHorizontalPadding,
+    view.frame = CGRectMake([self getHorizontalPadding],
                             kGTIconButtonVerticalPadding,
                             view.frame.size.width,
                             view.frame.size.height);
@@ -57,10 +57,16 @@ static CGFloat const kGTIconButtonVerticalPadding = 5;
     UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
     button.frame = CGRectMake(0,
                               0,
-                              view.frame.size.width + (kGTIconButtonHorizontalPadding *2),
+                              view.frame.size.width + ([self getHorizontalPadding] *2),
                               view.frame.size.height + (kGTIconButtonVerticalPadding *2));
     [button addSubview:view];
     return button;
+}
+
++ (CGFloat)getHorizontalPadding
+{
+    // varies betweeen iOS 6.1 and iOS 7
+    return SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7") ? 0 : 10;
 }
 
 @end
