@@ -15,7 +15,7 @@
 			<key>CFBundleIconFiles</key>
 			<array>
 				<string>logo.png</string>
-				<string>logo_retina.png</string>
+				<string>logo-retina.png</string>
 			</array>
 			<key>UIPrerenderedIcon</key>
 			<true/>

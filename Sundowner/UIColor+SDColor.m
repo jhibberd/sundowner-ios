@@ -11,7 +11,7 @@
 }
 
 + (UIColor *)linkColor {
-    return [UIColor colorWithRed:62/255.0 green:154/255.0 blue:201/255.0 alpha:1];
+    return [UIColor colorWithRed:117/255.0 green:146/255.0 blue:13/255.0 alpha:1];
 }
 
 + (UIColor *)likeColor {
@@ -23,7 +23,7 @@
 }
 
 + (UIColor *)backgroundTextColor {
-    return [UIColor colorWithRed:220/255.0 green:220/255.0 blue:220/255.0 alpha:1];
+    return [UIColor colorWithRed:210/255.0 green:210/255.0 blue:210/255.0 alpha:1];
 }
 
 @end

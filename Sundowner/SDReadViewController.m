@@ -34,7 +34,7 @@
     [self.tableView setContentInset:UIEdgeInsetsMake(GTPaddingTopOuter, 0, GTPaddingBottomOuter, 0)];
     
     _content = [[NSMutableArray alloc] init];
-    [self.tableView registerClass:[SDContentCell class] forCellReuseIdentifier:@"Object"];
+    [self.tableView registerClass:[SDContentCell class] forCellReuseIdentifier:@"Content"];
     
     // add handler for refreshing gesture
     [self.refreshControl addTarget:self
@@ -136,29 +136,25 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *CellIdentifier = @"Object";
+    static NSString *CellIdentifier = @"Content";
     SDContentCell *cell = (SDContentCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier
                                                                            forIndexPath:indexPath];
-    NSDictionary *object = [_content objectAtIndex:indexPath.item];
     cell.delegate = self;
-    [cell setContent:object];
+    cell.content = [_content objectAtIndex:indexPath.item];
     return cell;
 }
 
 - (void)contentVotedUp:(NSDictionary *)content
 {
-    [SDToast toast:@"SERVER_ERROR"];
-    
-    /*
      // notify the server
      NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
      NSString *userId = [defaults stringForKey:@"userId"];
      SDAppDelegate *app = [UIApplication sharedApplication].delegate;
      [app.server vote:SDVoteUp content:content[@"id"] user:userId callback:^(NSDictionary *response) {
-     // TODO check response code and alert user if failure.
-     // TODO what happens if the server returns a 400?
+         // TODO check response code and alert user if failure.
+         // TODO what happens if the server returns a 400?
+         // [SDToast toast:@"SERVER_ERROR"];
      }];
-     */
 }
 
 - (void)contentVotedDown:(NSDictionary *)content
@@ -172,7 +168,6 @@
     [self.tableView endUpdates];
     
     // I think below the callback can be nil and let the SDServerRequest object handle any errors
-    /*
     // notify the server
     NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
     NSString *userId = [defaults stringForKey:@"userId"];
@@ -180,7 +175,6 @@
     [app.server vote:SDVoteDown content:content[@"id"] user:userId callback:^(NSDictionary *response) {
         // TODO check response code and alert user if failure.
     }];
-     */
 }
 
 @end

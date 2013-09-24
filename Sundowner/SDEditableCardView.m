@@ -1,8 +1,8 @@
 
-#import "SDContentCell.h"
 #import "SDEditableCardView.h"
 #import "SDGrowingTextView.h"
 #import "SystemVersion.h"
+#import "UIFont+SDFont.h"
 
 static CGFloat const kSDEditableCardViewPadding = 10.0;
 
@@ -39,7 +39,7 @@ static CGFloat const kSDEditableCardViewPadding = 10.0;
         CGFloat contentWidth = componentWidth -
                                (_contentTextViewEdgeInsets.left + _contentTextViewEdgeInsets.right);
         _contentTextView = [[SDGrowingTextView alloc] initWithWidth:contentWidth origin:origin delegate:self];
-        _contentTextView.font = [UIFont systemFontOfSize:GTTitleFontSize];
+        _contentTextView.font = [UIFont titleFont];
         [_contentTextView sizeHeightToContent];
         [self addSubview:_contentTextView];
         
@@ -50,7 +50,7 @@ static CGFloat const kSDEditableCardViewPadding = 10.0;
         _authorLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, componentWidth, 0)];
         _authorLabel.text = authorText;
         _authorLabel.textColor = [UIColor lightGrayColor];
-        _authorLabel.font = [UIFont systemFontOfSize:GTNormalFontSize];
+        _authorLabel.font = [UIFont normalFont];
         _authorLabel.translatesAutoresizingMaskIntoConstraints = NO;
         [_authorLabel sizeToFit];
         [self addSubview:_authorLabel];
