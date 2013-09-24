@@ -1,11 +1,13 @@
 
 #import "SDContentView.h"
-#import "SDEditableCardView.h"
-#import "SDGrowingTextView.h"
+#import "SDComposeContentView.h"
+#import "SDContentTextView.h"
 #import "SystemVersion.h"
 #import "UIFont+SDFont.h"
 
-@implementation SDEditableCardView {
+@implementation SDComposeContentView {
+    SDContentTextView *_contentTextView;
+    UILabel *_authorLabel;
     UIEdgeInsets _contentTextViewEdgeInsets;
 }
 
@@ -37,7 +39,7 @@
                                      kSDContentViewPadding + _contentTextViewEdgeInsets.top);
         CGFloat contentWidth = componentWidth -
                                (_contentTextViewEdgeInsets.left + _contentTextViewEdgeInsets.right);
-        _contentTextView = [[SDGrowingTextView alloc] initWithWidth:contentWidth origin:origin delegate:self];
+        _contentTextView = [[SDContentTextView alloc] initWithWidth:contentWidth origin:origin delegate:self];
         _contentTextView.font = [UIFont titleFont];
         [_contentTextView sizeHeightToContent];
         [self addSubview:_contentTextView];
@@ -75,14 +77,24 @@
     return self;
 }
 
+- (NSString *)getContentText
+{
+    return _contentTextView.text;
+}
+
+- (void)becomeFirstResponder
+{
+    [_contentTextView becomeFirstResponder];
+}
+
+- (void)resignFirstResponder
+{
+    [_contentTextView resignFirstResponder];
+}
+
 - (void)growingTextViewDidChangeHeight
 {
     // if the textview grows in height then this view also must grow (see intrinsicContentSize)
-    [self invalidateIntrinsicContentSize];
-}
-
-- (void)urlLinkDidChangeHeight
-{
     [self invalidateIntrinsicContentSize];
 }
 

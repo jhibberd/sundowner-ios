@@ -1,8 +1,9 @@
 
 #import <QuartzCore/QuartzCore.h>
+#import "NSString+SDContentText.h"
 #import "SDAppDelegate.h"
 #import "SDContentCell.h"
-#import "SDEditableCardView.h"
+#import "SDComposeContentView.h"
 #import "SDToast.h"
 #import "SDWriteViewController.h"
 #import "SystemVersion.h"
@@ -15,7 +16,7 @@
 @implementation SDWriteViewController {
     UIBarButtonItem *_acceptButton;
     UIBarButtonItem *_backButton;
-    SDEditableCardView *_editableCardView;
+    SDComposeContentView *_composeContentView;
 }
 
 - (void)viewDidLoad
@@ -36,11 +37,11 @@
     
     CGFloat width = self.view.frame.size.width - (kSDContentCellHorizontalPadding *2);
     CGRect frame = CGRectMake(kSDContentCellHorizontalPadding, 0, width, 0);
-    _editableCardView = [[SDEditableCardView alloc] initWithFrame:frame];
-    [self.view addSubview:_editableCardView];
+    _composeContentView = [[SDComposeContentView alloc] initWithFrame:frame];
+    [self.view addSubview:_composeContentView];
     
     // constrain editable card to fixed distance from top of containing view
-    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:_editableCardView
+    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:_composeContentView
                                                           attribute:NSLayoutAttributeTop
                                                           relatedBy:NSLayoutRelationEqual
                                                              toItem:self.view
@@ -53,21 +54,14 @@
                                                                             action:@selector(dismissKeyboard)]];
 }
 
-- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
-{
-    // TODO apply character and/or height limit
-    //NSString *newText = [textView.text stringByReplacingCharactersInRange:range withString:text];
-    return YES;
-}
-
 -(void)dismissKeyboard {
-    [_editableCardView.contentTextView resignFirstResponder];
+    [_composeContentView resignFirstResponder];
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    [_editableCardView.contentTextView becomeFirstResponder];
+    [_composeContentView becomeFirstResponder];
     
     // during the time that the user is composing the content attempt to get an accurate location on
     // the device
@@ -91,14 +85,12 @@
 
 - (void)acceptButtonWasClicked {
     
-    NSDictionary *parsedContent = [self parseContentText:_editableCardView.contentTextView.text];
-    if (parsedContent == nil) {
-        NSLog(@"badly formed content text");
-        return;
-    }
+    NSDictionary *parsedText = [[_composeContentView getContentText] parseAsContentText];
+    NSString *text = parsedText[@"text"];
+    NSString *url = parsedText[@"url"];
     
     // ignore the message if the content is blank
-    if ([[parsedContent[@"text"] stringByReplacingOccurrencesOfString:@" " withString:@""] length] == 0) {
+    if ([text length] == 0) {
         return;
     }
     
@@ -113,8 +105,8 @@
     NSString *userId = [defaults stringForKey:@"userId"];
     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
     CLLocation *bestLocation = [app.location2 stopUpdatingLocationAndReturnBest];
-    [app.server setContent:parsedContent[@"text"]
-                       url:parsedContent[@"url"]
+    [app.server setContent:text
+                       url:url
                   location:bestLocation
                       user:userId
                   callback:^(NSDictionary *response) {
@@ -134,32 +126,6 @@
 {
     [SDToast toast:@"CANNOT_GET_LOCATION"];
     [self closeView];
-}
-
-- (NSDictionary *)parseContentText:(NSString *)text
-{
-    NSObject *url = [NSNull null];
-    NSMutableString *mutableText = [[NSMutableString alloc] initWithString:text];
-    
-    // search the text for URLs
-    NSDataDetector* detector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:nil];
-    NSArray* matches = [detector matchesInString:text options:0 range:NSMakeRange(0, [text length])];
-    if ([matches count] > 1) {
-        // more than 1 URL in text!
-        return nil;
-    }
-    
-    // if a URL was found extract and remove it from the text
-    if ([matches count] > 0) {
-        NSTextCheckingResult *match = [matches lastObject];
-        url = [[match URL] description];
-        [mutableText deleteCharactersInRange:[match range]];
-        NSString *trimmedText =
-        [mutableText stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-        mutableText = [[NSMutableString alloc] initWithString:trimmedText];
-    }
-    
-    return @{@"text": mutableText, @"url": url};
 }
 
 @end

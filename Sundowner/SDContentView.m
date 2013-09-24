@@ -1,6 +1,5 @@
 
 #import "SDContentView.h"
-#import "SystemVersion.h"
 #import "UIColor+SDColor.h"
 #import "UIFont+SDFont.h"
 
@@ -63,17 +62,14 @@ CGFloat const kSDContentViewPadding = 10;
                                                                            views:variableBindings]];
         }
         
-        // fix to dynamically grow height of UILabel with autolayout in iOS 6
+        // ensure height of UILabel grows to fit the text with autolayout
         // http://stackoverflow.com/questions/16009405/uilabel-sizetofit-doesnt-work-with-autolayout-ios6
-        if (SYSTEM_VERSION_LESS_THAN(@"7")) {
-            _text.lineBreakMode = NSLineBreakByWordWrapping;
-            _text.preferredMaxLayoutWidth = self.frame.size.width - (kSDContentViewPadding *2);
-            [_text setContentHuggingPriority:UILayoutPriorityRequired
-                                     forAxis:UILayoutConstraintAxisVertical];
-            [_text setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                                   forAxis:UILayoutConstraintAxisVertical];
-        }
-        
+        _text.lineBreakMode = NSLineBreakByWordWrapping;
+        _text.preferredMaxLayoutWidth = self.frame.size.width - (kSDContentViewPadding *2);
+        [_text setContentHuggingPriority:UILayoutPriorityRequired
+                                 forAxis:UILayoutConstraintAxisVertical];
+        [_text setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                               forAxis:UILayoutConstraintAxisVertical];
     }
     return self;
 }
