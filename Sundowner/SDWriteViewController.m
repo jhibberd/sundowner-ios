@@ -34,8 +34,8 @@
     [self.navigationItem setRightBarButtonItem:_acceptButton];
     [self.navigationItem setLeftBarButtonItem:_backButton];
     
-    CGFloat width = self.view.frame.size.width - (GTPaddingLeftOuter + GTPaddingRightOuter);
-    CGRect frame = CGRectMake(GTPaddingLeftOuter, GTPaddingTopOuter, width, 0);
+    CGFloat width = self.view.frame.size.width - (kSDContentCellHorizontalPadding *2);
+    CGRect frame = CGRectMake(kSDContentCellHorizontalPadding, 0, width, 0);
     _editableCardView = [[SDEditableCardView alloc] initWithFrame:frame];
     [self.view addSubview:_editableCardView];
     
@@ -46,7 +46,7 @@
                                                              toItem:self.view
                                                           attribute:NSLayoutAttributeTop
                                                          multiplier:1.0
-                                                           constant:(GTPaddingTopOuter *2)]];
+                                                           constant:(kSDContentCellVerticalPadding *2)]];
     
     // dismiss the keyboard when the user clicks elsewhere in the view
     [self.view addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self

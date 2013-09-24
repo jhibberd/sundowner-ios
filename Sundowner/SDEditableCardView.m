@@ -1,10 +1,9 @@
 
+#import "SDContentView.h"
 #import "SDEditableCardView.h"
 #import "SDGrowingTextView.h"
 #import "SystemVersion.h"
 #import "UIFont+SDFont.h"
-
-static CGFloat const kSDEditableCardViewPadding = 10.0;
 
 @implementation SDEditableCardView {
     UIEdgeInsets _contentTextViewEdgeInsets;
@@ -22,7 +21,7 @@ static CGFloat const kSDEditableCardViewPadding = 10.0;
         self.translatesAutoresizingMaskIntoConstraints = NO;
         
         // in order for components to initially size themselves correctly they need a width
-        CGFloat componentWidth = self.frame.size.width - (kSDEditableCardViewPadding *2);
+        CGFloat componentWidth = self.frame.size.width - (kSDContentViewPadding *2);
         
         // UITextView comes with inherent content inset which can't be cleanly removed. To overcome this
         // (and have better alignment of text within the UITextView and other components) the control's
@@ -34,8 +33,8 @@ static CGFloat const kSDEditableCardViewPadding = 10.0;
             _contentTextViewEdgeInsets = UIEdgeInsetsMake(-8, -8, -5, -8);
         }
         
-        CGPoint origin = CGPointMake(kSDEditableCardViewPadding + _contentTextViewEdgeInsets.left,
-                                     kSDEditableCardViewPadding + _contentTextViewEdgeInsets.top);
+        CGPoint origin = CGPointMake(kSDContentViewPadding + _contentTextViewEdgeInsets.left,
+                                     kSDContentViewPadding + _contentTextViewEdgeInsets.top);
         CGFloat contentWidth = componentWidth -
                                (_contentTextViewEdgeInsets.left + _contentTextViewEdgeInsets.right);
         _contentTextView = [[SDGrowingTextView alloc] initWithWidth:contentWidth origin:origin delegate:self];
@@ -89,7 +88,7 @@ static CGFloat const kSDEditableCardViewPadding = 10.0;
 
 - (CGSize)intrinsicContentSize
 {
-    CGFloat height = (kSDEditableCardViewPadding *2) +
+    CGFloat height = (kSDContentViewPadding *2) +
                      _contentTextView.frame.size.height +
                      (_contentTextViewEdgeInsets.top + _contentTextViewEdgeInsets.bottom) +
                      _authorLabel.frame.size.height;

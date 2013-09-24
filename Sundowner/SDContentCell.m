@@ -1,23 +1,16 @@
 
 #import <QuartzCore/QuartzCore.h>
 #import "SDContentCell.h"
+#import "SDContentView.h"
 #import "SDLikeView.h"
 #import "UIColor+SDColor.h"
-#import "UIFont+SDFont.h"
-#import "SDContentView.h"
 
-CGFloat const GTPaddingTopInner =       10;
-CGFloat const GTPaddingBottomInner =    10;
-CGFloat const GTPaddingLeftInner =      10;
-CGFloat const GTPaddingRightInner =     10;
-CGFloat const GTPaddingTopOuter =       5;
-CGFloat const GTPaddingBottomOuter =    5;
-CGFloat const GTPaddingLeftOuter =      10;
-CGFloat const GTPaddingRightOuter =     10;
+CGFloat const kSDContentCellHorizontalPadding =     10;
+CGFloat const kSDContentCellVerticalPadding =       5;
 
 // this aspect ratio must be maintained for correct shape proportion (original 110x95)
-static NSUInteger const kSDLikeViewWidth =      77;
-static NSUInteger const kSDLikeViewHeight =     66.5;
+static NSUInteger const kSDLikeViewWidth =          77;
+static NSUInteger const kSDLikeViewHeight =         66.5;
 
 @implementation SDContentCell {
     
@@ -28,35 +21,11 @@ static NSUInteger const kSDLikeViewHeight =     66.5;
     BOOL _voteDownOnDragRelease;
 }
 
-+ (CGFloat)estimateHeightForObject:(NSDictionary *)object constrainedByWidth:(CGFloat)width
++ (CGFloat)calculateContentHeight:(NSDictionary *)content constrainedByWidth:(CGFloat)width
 {
-    //return 100;
-    // padding is defined internally within this class so should be applied here
-    width -= (GTPaddingLeftInner + GTPaddingRightInner + GTPaddingLeftOuter + GTPaddingRightOuter);
-    NSString *titleText = object[@"title"];
-    NSString *authorText = [self constructAuthorString:object];
-    CGFloat titleHeight = [self estimateHeightForTitle:titleText constrainedByWidth:width];
-    CGFloat authorHeight = [self estimateHeightForAuthor:authorText constrainedByWidth:width];
-    return GTPaddingTopOuter + GTPaddingTopInner + titleHeight + authorHeight + GTPaddingBottomInner + GTPaddingBottomOuter;
-}
-
-+ (CGFloat)estimateHeightForTitle:(NSString *)titleText constrainedByWidth:(CGFloat)width
-{
-    CGSize constraint = CGSizeMake(width, INT_MAX); // effectively unbounded height
-    CGSize size = [titleText sizeWithFont:[UIFont titleFont] constrainedToSize:constraint];
-    return size.height;
-}
-
-+ (CGFloat)estimateHeightForAuthor:(NSString *)authorText constrainedByWidth:(CGFloat)width
-{
-    CGSize constraint = CGSizeMake(width, INT_MAX);
-    CGSize size = [authorText sizeWithFont:[UIFont normalFont] constrainedToSize:constraint];
-    return size.height;
-}
-
-+ (NSString *)constructAuthorString:(NSDictionary *)object
-{
-    return [NSString stringWithFormat:@"by %@", object[@"username"]];
+    CGFloat contentViewWidth = width - (kSDContentCellHorizontalPadding *2);
+    CGFloat contentViewHeight = [SDContentView calculateContentHeight:content constrainedByWidth:contentViewWidth];
+    return contentViewHeight + (kSDContentCellVerticalPadding *2);
 }
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
@@ -69,17 +38,22 @@ static NSUInteger const kSDLikeViewHeight =     66.5;
         
         // TODO it would be nice not to have to define the width first and rely on autolayout entirely
         // but it's not easy and so far a solution hasn't been found
-        CGFloat width = self.frame.size.width - (GTPaddingLeftOuter + GTPaddingRightOuter);
+        CGFloat width = self.frame.size.width - (kSDContentCellHorizontalPadding *2);
         _contentView = [[SDContentView alloc] initWithFrame:CGRectMake(0, 0, width, 0)];
         _contentView.translatesAutoresizingMaskIntoConstraints = NO;
         [self.contentView addSubview:_contentView];
         
+        NSString *constraintFormat = nil;
         NSDictionary *variableBindings = NSDictionaryOfVariableBindings(_contentView);
-        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-5-[_contentView]-5-|"
+        constraintFormat = [NSString stringWithFormat:@"V:|-%f-[_contentView]-%f-|",
+                            kSDContentCellVerticalPadding, kSDContentCellVerticalPadding];
+        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:constraintFormat
                                                                                  options:0
                                                                                  metrics:nil
                                                                                    views:variableBindings]];
-        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"|-10-[_contentView]-10-|"
+        constraintFormat = [NSString stringWithFormat:@"|-%f-[_contentView]-%f-|",
+                            kSDContentCellHorizontalPadding, kSDContentCellHorizontalPadding];
+        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:constraintFormat
                                                                                  options:0
                                                                                  metrics:nil
                                                                                    views:variableBindings]];
@@ -109,6 +83,7 @@ static NSUInteger const kSDLikeViewHeight =     66.5;
 
 - (void)setContent:(NSDictionary *)content
 {
+    _content = content;
     _contentView.content = content;
 }
 

@@ -4,9 +4,24 @@
 #import "UIColor+SDColor.h"
 #import "UIFont+SDFont.h"
 
+CGFloat const kSDContentViewPadding = 10;
+
 @implementation SDContentView {
     UILabel *_text;
     UILabel *_author;
+}
+
+// A UITableViewController needs to know in advance (of autolayout) the heights of all visible cells.
+// This method (tied somewhat to the autolayout constraints algorithm) will calculate the height consumed
+// by each piece of content once it has been layed out using the autolayout algorithm.
++ (CGFloat)calculateContentHeight:(NSDictionary *)content constrainedByWidth:(CGFloat)width
+{
+    NSString *titleText = content[@"title"];
+    NSString *authorText = [NSString stringWithFormat:@"by %@", content[@"username"]];
+    CGSize constraint = CGSizeMake(width - (kSDContentViewPadding *2), MAXFLOAT);
+    CGSize titleSize = [titleText sizeWithFont:[UIFont titleFont] constrainedToSize:constraint];
+    CGSize authorSize = [authorText sizeWithFont:[UIFont normalFont] constrainedToSize:constraint];
+    return titleSize.height + authorSize.height + (kSDContentViewPadding *2);
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -35,29 +50,24 @@
         
         // define layout constraints
         NSDictionary *variableBindings = NSDictionaryOfVariableBindings(self, _text, _author);
-        [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-10-[_text]-0-[_author]-10-|"
-                                                                     options:0
-                                                                     metrics:nil
-                                                                       views:variableBindings]];
-        [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"|-10-[_text]-10-|"
-                                                                     options:0
-                                                                     metrics:nil
-                                                                       views:variableBindings]];
-        [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"|-10-[_author]-10-|"
-                                                                     options:0
-                                                                     metrics:nil
-                                                                       views:variableBindings]];
-        NSString *format = [NSString stringWithFormat:@"[self(%f)]", self.frame.size.width];
-        [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:format
-                                                                     options:0
-                                                                     metrics:nil
-                                                                       views:variableBindings]];
+        NSArray *constaintFormats = @[
+            [NSString stringWithFormat:@"V:|-%f-[_text]-0-[_author]-%f-|", kSDContentViewPadding, kSDContentViewPadding],
+            [NSString stringWithFormat:@"|-%f-[_text]-%f-|", kSDContentViewPadding, kSDContentViewPadding],
+            [NSString stringWithFormat:@"|-%f-[_author]-%f-|", kSDContentViewPadding, kSDContentViewPadding],
+            [NSString stringWithFormat:@"[self(%f)]", self.frame.size.width]
+            ];
+        for (NSString *constaintFormat in constaintFormats) {
+            [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:constaintFormat
+                                                                         options:0
+                                                                         metrics:nil
+                                                                           views:variableBindings]];
+        }
         
         // fix to dynamically grow height of UILabel with autolayout in iOS 6
         // http://stackoverflow.com/questions/16009405/uilabel-sizetofit-doesnt-work-with-autolayout-ios6
         if (SYSTEM_VERSION_LESS_THAN(@"7")) {
             _text.lineBreakMode = NSLineBreakByWordWrapping;
-            _text.preferredMaxLayoutWidth = self.frame.size.width - 20;
+            _text.preferredMaxLayoutWidth = self.frame.size.width - (kSDContentViewPadding *2);
             [_text setContentHuggingPriority:UILayoutPriorityRequired
                                      forAxis:UILayoutConstraintAxisVertical];
             [_text setContentCompressionResistancePriority:UILayoutPriorityRequired

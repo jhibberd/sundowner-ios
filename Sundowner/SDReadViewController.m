@@ -31,7 +31,7 @@
     UIBarButtonItem *composeItem = [UIBarButtonItem itemComposeForTarget:self action:@selector(composeButtonWasClicked)];
     [self.navigationItem setRightBarButtonItem:composeItem];
     
-    [self.tableView setContentInset:UIEdgeInsetsMake(GTPaddingTopOuter, 0, GTPaddingBottomOuter, 0)];
+    [self.tableView setContentInset:UIEdgeInsetsMake(kSDContentCellVerticalPadding, 0, kSDContentCellVerticalPadding, 0)];
     
     _content = [[NSMutableArray alloc] init];
     [self.tableView registerClass:[SDContentCell class] forCellReuseIdentifier:@"Content"];
@@ -130,8 +130,8 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSDictionary *object = [_content objectAtIndex:indexPath.item];
-    return [SDContentCell estimateHeightForObject:object constrainedByWidth:tableView.frame.size.width];
+    NSDictionary *content = [_content objectAtIndex:indexPath.item];
+    return [SDContentCell calculateContentHeight:content constrainedByWidth:tableView.frame.size.width];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
