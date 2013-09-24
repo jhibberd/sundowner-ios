@@ -3,7 +3,6 @@
 #import "SDContentCell.h"
 #import "SDReadViewController.h"
 #import "SDToast.h"
-#import "OpenInChromeController.h"
 #import "UIBarButtonItem+SDBarButtonItem.h"
 #import "UIColor+SDColor.h"
 
@@ -106,24 +105,8 @@
 
 - (void)contentURLRequested:(NSDictionary *)content
 {
-    //NSDictionary *object = [_objects objectAtIndex:indexPath.item];
     NSURL *url = [[NSURL alloc] initWithString:content[@"url"]];
-    
-    // Ideally open the content URL is Google Chrome which provides a back button that returns the user
-    // to this app. If Google Chrome isn't installed use the default browser.
-    // https://developers.google.com/chrome/mobile/docs/ios-links
-    BOOL success;
-    OpenInChromeController *chromeController = [OpenInChromeController sharedInstance];
-    if ([chromeController isChromeInstalled]) {
-        static NSString *const chromeCallbackURLString = @"sundowner://";
-        NSURL *callbackURL = [[NSURL alloc] initWithString:chromeCallbackURLString];
-        success = [[OpenInChromeController sharedInstance] openInChrome:url
-                                                        withCallbackURL:callbackURL
-                                                           createNewTab:YES];
-    } else {
-        success = [[UIApplication sharedApplication] openURL:url];
-    }
-    if (!success) {
+    if (![[UIApplication sharedApplication] openURL:url]) {
         [SDToast toast:@"CANNOT_OPEN_URL"];
     }
 }
