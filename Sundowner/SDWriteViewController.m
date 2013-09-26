@@ -17,6 +17,7 @@
     UIBarButtonItem *_acceptButton;
     UIBarButtonItem *_backButton;
     SDComposeContentView *_composeContentView;
+    UIScrollView *_scrollView;
 }
 
 - (void)viewDidLoad
@@ -35,26 +36,58 @@
     [self.navigationItem setRightBarButtonItem:_acceptButton];
     [self.navigationItem setLeftBarButtonItem:_backButton];
     
+    // add scroll view
+    _scrollView = [[UIScrollView alloc] init];
+    _scrollView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:_scrollView];
+    
+    // add compose content view
     CGFloat width = self.view.frame.size.width - (kSDContentCellHorizontalPadding *2);
     CGRect frame = CGRectMake(kSDContentCellHorizontalPadding, 0, width, 0);
     _composeContentView = [[SDComposeContentView alloc] initWithFrame:frame];
-    [self.view addSubview:_composeContentView];
+    [_scrollView addSubview:_composeContentView];
+
+    // auto layout constraints
+    NSDictionary *viewsDictionary = NSDictionaryOfVariableBindings(_scrollView, _composeContentView);
+    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_scrollView]|"
+                                                                      options:0
+                                                                      metrics:0
+                                                                        views:viewsDictionary]];
+    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_scrollView]|"
+                                                                      options:0
+                                                                      metrics:0
+                                                                        views:viewsDictionary]];
+    NSString *hFormat = [NSString stringWithFormat:@"H:|-%f-[_composeContentView]-%f-|",
+                         kSDContentCellHorizontalPadding, kSDContentCellHorizontalPadding];
+    [_scrollView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:hFormat
+                                                                        options:0
+                                                                        metrics:0
+                                                                          views:viewsDictionary]];
+    NSString *vFormat = [NSString stringWithFormat:@"V:|-%f-[_composeContentView]-%f-|",
+                         kSDContentCellVerticalPadding *2, kSDContentCellVerticalPadding *2];
+    [_scrollView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:vFormat
+                                                                        options:0
+                                                                        metrics:0
+                                                                          views:viewsDictionary]];
     
-    // constrain editable card to fixed distance from top of containing view
-    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:_composeContentView
-                                                          attribute:NSLayoutAttributeTop
-                                                          relatedBy:NSLayoutRelationEqual
-                                                             toItem:self.view
-                                                          attribute:NSLayoutAttributeTop
-                                                         multiplier:1.0
-                                                           constant:(kSDContentCellVerticalPadding *2)]];
-    
-    // dismiss the keyboard when the user clicks elsewhere in the view
-    [self.view addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self
+    [_scrollView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self
                                                                             action:@selector(dismissKeyboard)]];
 }
 
--(void)dismissKeyboard {
+- (void)keyboardDidShow:(NSNotification *)notification
+{
+    // adjust the scroll view's frame so that no part of it is obscured by the keyboard
+    CGSize keyboardSize = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
+    _scrollView.contentInset = UIEdgeInsetsMake(0, 0, keyboardSize.height, 0);
+}
+
+- (void)keyboardWillHide:(NSNotification *)notification
+{
+    // adjust the scroll view's frame so that it fills its superview
+    _scrollView.contentInset = UIEdgeInsetsZero;
+}
+
+- (void)dismissKeyboard {
     [_composeContentView resignFirstResponder];
 }
 
@@ -67,6 +100,17 @@
     // the device
     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
     [app.location2 startUpdatingLocation:self];
+    
+    // get notified when the keyboard appears/disappears so that the scroll view's frame can be adjusted
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(keyboardDidShow:)
+                               name:UIKeyboardDidShowNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(keyboardWillHide:)
+                               name:UIKeyboardWillHideNotification
+                             object:nil];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -77,6 +121,9 @@
     // for example
     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
     [app.location2 stopUpdatingLocationAndReturnBest];
+    
+    // stop receiving keyboard notifications
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)backButtonWasClicked {
