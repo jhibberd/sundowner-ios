@@ -81,6 +81,7 @@
                                 user:userId
                             callback:^(NSDictionary *response) {
                                 
+                                // TODO what if there is a server error? Caught by the request class?
                                 _content = response[@"data"];
                                 [self.tableView reloadData];
                                 
@@ -133,11 +134,7 @@
      NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
      NSString *userId = [defaults stringForKey:@"userId"];
      SDAppDelegate *app = [UIApplication sharedApplication].delegate;
-     [app.server vote:SDVoteUp content:content[@"id"] user:userId callback:^(NSDictionary *response) {
-         // TODO check response code and alert user if failure.
-         // TODO what happens if the server returns a 400?
-         // [SDToast toast:@"SERVER_ERROR"];
-     }];
+     [app.server vote:SDVoteUp content:content[@"id"] user:userId callback:nil];
 }
 
 - (void)contentVotedDown:(NSDictionary *)content
@@ -150,14 +147,11 @@
                           withRowAnimation:UITableViewRowAnimationRight];
     [self.tableView endUpdates];
     
-    // I think below the callback can be nil and let the SDServerRequest object handle any errors
     // notify the server
     NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
     NSString *userId = [defaults stringForKey:@"userId"];
     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
-    [app.server vote:SDVoteDown content:content[@"id"] user:userId callback:^(NSDictionary *response) {
-        // TODO check response code and alert user if failure.
-    }];
+    [app.server vote:SDVoteDown content:content[@"id"] user:userId callback:nil];
 }
 
 @end

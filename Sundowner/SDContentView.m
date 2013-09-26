@@ -15,7 +15,7 @@ CGFloat const kSDContentViewPadding = 10;
 // by each piece of content once it has been layed out using the autolayout algorithm.
 + (CGFloat)calculateContentHeight:(NSDictionary *)content constrainedByWidth:(CGFloat)width
 {
-    NSString *titleText = content[@"title"];
+    NSString *titleText = content[@"text"];
     NSString *authorText = [NSString stringWithFormat:@"by %@", content[@"username"]];
     CGSize constraint = CGSizeMake(width - (kSDContentViewPadding *2), MAXFLOAT);
     CGSize titleSize = [titleText sizeWithFont:[UIFont titleFont] constrainedToSize:constraint];
@@ -76,8 +76,8 @@ CGFloat const kSDContentViewPadding = 10;
  
 - (void)setContent:(NSDictionary *)content
 {
-    _text.text = content[@"title"];
-    _text.textColor = content[@"url"] == nil ? [UIColor textColor] : [UIColor linkColor];
+    _text.text = content[@"text"];
+    _text.textColor = content[@"url"] == [NSNull null] ? [UIColor textColor] : [UIColor linkColor];
     _author.text = [NSString stringWithFormat:@"by %@", content[@"username"]];
 }
 

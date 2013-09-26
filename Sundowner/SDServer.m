@@ -25,7 +25,7 @@
                     user:(NSString *)userId
                 callback:(ServerCallback)callback
 {
-    NSURLRequest *request = [self createRequestForEndpoint:@"/content?longitude=%f&latitude=%f&user_id=%@",
+    NSURLRequest *request = [self createRequestForEndpoint:@"/content?lng=%f&lat=%f&user_id=%@",
                              coordinate.longitude, coordinate.latitude, userId];
     SDServerRequest *serverRequest = [[SDServerRequest alloc] initWithRequest:request callback:callback];
     [serverRequest request];
@@ -41,11 +41,11 @@
     CLLocationDegrees latitude =    location.coordinate.latitude;
     CLLocationAccuracy accuracy =   location.horizontalAccuracy;
     NSMutableDictionary *data = [@{
-                                 @"longitude":      [NSNumber numberWithDouble:longitude],
-                                 @"latitude":       [NSNumber numberWithDouble:latitude],
+                                 @"lng":            [NSNumber numberWithDouble:longitude],
+                                 @"lat":            [NSNumber numberWithDouble:latitude],
                                  @"accuracy":       [NSNumber numberWithDouble:accuracy],
                                  @"user_id":        userId,
-                                 @"title":          content}
+                                 @"text":           content}
                                  mutableCopy];
     if (url != nil) {
         [data setObject:url forKey:@"url"];
