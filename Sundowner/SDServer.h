@@ -13,14 +13,14 @@ typedef enum {
 + (void)setNetworkActivityIndicatorVisible:(BOOL)setVisible;
 - (void)getContentNearby:(CLLocationCoordinate2D)coordinate
                     user:(NSString *)userId
-                callback:(ServerCallback)callback;
+               onSuccess:(ServerCallback)successCallback;
 - (void)setContent:(NSString *)content
                url:(NSString *)url
           location:(CLLocation *)location
               user:(NSString *)userId
-          callback:(ServerCallback)callback;
+         onSuccess:(ServerCallback)successCallback
+         onFailure:(ServerCallback)failureCallback;
 - (void)vote:(SDVote)vote
      content:(NSString *)contentId
-        user:(NSString *)userId
-    callback:(ServerCallback)callback;
+        user:(NSString *)userId;
 @end

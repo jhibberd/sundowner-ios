@@ -5,18 +5,23 @@
 
 @implementation SDServerRequest {
     NSURLRequest *_request;
-    ServerCallback _callback;
+    ServerCallback _successCallback;
+    ServerCallback _failureCallback;
     NSMutableData *_data;
+    NSHTTPURLResponse *_response;
 }
 
 #pragma mark Public
 
-- (id)initWithRequest:(NSURLRequest *)request callback:(ServerCallback)callback
+- (id)initWithRequest:(NSURLRequest *)request
+            onSuccess:(ServerCallback)successCallback
+            onFailure:(ServerCallback)failureCallback
 {
     self = [super init];
     if (self) {
         _request = request;
-        _callback = callback;
+        _successCallback = successCallback;
+        _failureCallback = failureCallback;
     }
     return self;
 }
@@ -28,26 +33,31 @@
                                                                   delegate:self
                                                           startImmediately:YES];
     if (!connection) {
-        [self error];
+        [self requestFailedWithResponse:nil];
     }
 }
 
 #pragma mark Private
 
-- (void)error
+- (void)requestFailedWithResponse:(NSDictionary *)payload
 {
     [SDServer setNetworkActivityIndicatorVisible:NO];
     [SDToast toast:@"SERVER_ERROR"];
+    if (_failureCallback) {
+        _failureCallback(payload);
+    }
 }
 
 - (void)connection:(NSURLConnection*)connection didReceiveResponse:(NSURLResponse*)response
 {
-    if ([((NSHTTPURLResponse *)response) statusCode] != 200) {
-        [self error];
-        [connection cancel];
-        return;
-    }
     _data = [[NSMutableData alloc] init];
+    _response = (NSHTTPURLResponse *)response;
+    if (!_response) {
+        // not sure why the response wouldn't be of type NSHTTPURLResponse but it could
+        // happen, and it should be treated as an error
+        [self requestFailedWithResponse:nil];
+        [connection cancel];
+    }
 }
 
 - (void)connection:(NSURLConnection*)connection didReceiveData:(NSData*)data
@@ -57,27 +67,39 @@
 
 - (void)connection:(NSURLConnection*)connection didFailWithError:(NSError*)error
 {
-    [self error];
+    [self requestFailedWithResponse:nil];
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection*)connection
 {
-    // if the Waitress API returned data, assume it to be JSON and decode it
-    NSDictionary *response = nil;
-    if ([_data length]) {
-        NSError *error = nil;
-        response = [NSJSONSerialization JSONObjectWithData:_data
-                                                   options:NSJSONReadingMutableContainers
-                                                     error:&error];
-        if (error) {
-            [self error];
-            return;
-        }
+    [SDServer setNetworkActivityIndicatorVisible:NO];
+    
+    // the API should always respond with data
+    if ([_data length] == 0) {
+        [self requestFailedWithResponse:nil];
+        return;
     }
     
-    [SDServer setNetworkActivityIndicatorVisible:NO];
-    if (_callback)
-        _callback(response);
+    // the API should always return data in JSON format
+    NSError *error = nil;
+    NSDictionary *payload = [NSJSONSerialization JSONObjectWithData:_data
+                                                            options:NSJSONReadingMutableContainers
+                                                              error:&error];
+    if (error) {
+        [self requestFailedWithResponse:nil];
+        return;
+    }
+    
+    // check the response HTTP status code
+    NSInteger statusCode = _response.statusCode;
+    if (statusCode < 200 || statusCode >= 400) {
+        [self requestFailedWithResponse:payload];
+        return;
+    }
+    
+    if (_successCallback) {
+        _successCallback(payload);
+    }
 }
 
 - (NSCachedURLResponse *)connection:(NSURLConnection *)connection

@@ -5,5 +5,6 @@
 
 @interface SDBestLocation : NSObject <CLLocationManagerDelegate>
 - (void)startUpdatingLocation:(id <SDBestLocationDelegate>)delegate;
+- (void)stopUpdatingLocation;
 - (CLLocation *)stopUpdatingLocationAndReturnBest;
 @end

@@ -30,16 +30,17 @@
     [_locationManager startUpdatingLocation];
 }
 
-- (CLLocation *)stopUpdatingLocationAndReturnBest
+- (void)stopUpdatingLocation
 {
     [_locationManager stopUpdatingLocation];
     _delegate = nil;
     _startTime = nil;
-    if (_bestLocation == nil) {
-        // during the allotted time a location couldn't be established
-        [_delegate failedToGetBestLocation];
-    }
-    
+}
+
+- (CLLocation *)stopUpdatingLocationAndReturnBest
+{
+    [self stopUpdatingLocation];
+    // will return nil if a best location hasn't yet been established
     return _bestLocation;
 }
 
@@ -66,7 +67,7 @@
 
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error
 {
-    [_delegate failedToGetBestLocation];
+    [_delegate locationManagerFailed];
 }
 
 @end

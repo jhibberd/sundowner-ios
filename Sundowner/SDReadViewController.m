@@ -79,7 +79,7 @@
     [app.location getCurrentLocationThen:^(CLLocation *currentLocation) {
         [app.server getContentNearby:currentLocation.coordinate
                                 user:userId
-                            callback:^(NSDictionary *response) {
+                           onSuccess:^(NSDictionary *response) {
                                 
                                 // TODO what if there is a server error? Caught by the request class?
                                 _content = response[@"data"];
@@ -99,10 +99,7 @@
     }];
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return [_content count];
-}
+# pragma mark Content Interaction
 
 - (void)contentURLRequested:(NSDictionary *)content
 {
@@ -112,29 +109,13 @@
     }
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    NSDictionary *content = [_content objectAtIndex:indexPath.item];
-    return [SDContentCell calculateContentHeight:content constrainedByWidth:tableView.frame.size.width];
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    static NSString *CellIdentifier = @"Content";
-    SDContentCell *cell = (SDContentCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier
-                                                                           forIndexPath:indexPath];
-    cell.delegate = self;
-    cell.content = [_content objectAtIndex:indexPath.item];
-    return cell;
-}
-
 - (void)contentVotedUp:(NSDictionary *)content
 {
      // notify the server
      NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
      NSString *userId = [defaults stringForKey:@"userId"];
      SDAppDelegate *app = [UIApplication sharedApplication].delegate;
-     [app.server vote:SDVoteUp content:content[@"id"] user:userId callback:nil];
+     [app.server vote:SDVoteUp content:content[@"id"] user:userId];
 }
 
 - (void)contentVotedDown:(NSDictionary *)content
@@ -151,7 +132,30 @@
     NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
     NSString *userId = [defaults stringForKey:@"userId"];
     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
-    [app.server vote:SDVoteDown content:content[@"id"] user:userId callback:nil];
+    [app.server vote:SDVoteDown content:content[@"id"] user:userId];
+}
+
+# pragma mark Table Management
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [_content count];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSDictionary *content = [_content objectAtIndex:indexPath.item];
+    return [SDContentCell calculateContentHeight:content constrainedByWidth:tableView.frame.size.width];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *CellIdentifier = @"Content";
+    SDContentCell *cell = (SDContentCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier
+                                                                           forIndexPath:indexPath];
+    cell.delegate = self;
+    cell.content = [_content objectAtIndex:indexPath.item];
+    return cell;
 }
 
 @end

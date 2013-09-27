@@ -23,19 +23,19 @@
 
 - (void)getContentNearby:(CLLocationCoordinate2D)coordinate
                     user:(NSString *)userId
-                callback:(ServerCallback)callback
+               onSuccess:(ServerCallback)successCallback
 {
     NSURLRequest *request = [self createRequestForEndpoint:@"/content?lng=%f&lat=%f&user_id=%@",
                              coordinate.longitude, coordinate.latitude, userId];
-    SDServerRequest *serverRequest = [[SDServerRequest alloc] initWithRequest:request callback:callback];
-    [serverRequest request];
+    [[[SDServerRequest alloc] initWithRequest:request onSuccess:successCallback onFailure:nil] request];
 }
 
 - (void)setContent:(NSString *)content
                url:(NSString *)url
           location:(CLLocation *)location
               user:(NSString *)userId
-          callback:(ServerCallback)callback
+         onSuccess:(ServerCallback)successCallback
+        onFailure:(ServerCallback)failureCallback
 {    
     CLLocationDegrees longitude =   location.coordinate.longitude;
     CLLocationDegrees latitude =    location.coordinate.latitude;
@@ -59,14 +59,12 @@
     NSMutableURLRequest *request = [self createRequestForEndpoint:@"/content"];
     [self preparePostRequest:request withPayload:payload];
     
-    SDServerRequest *serverRequest = [[SDServerRequest alloc] initWithRequest:request callback:callback];
-    [serverRequest request];
+    [[[SDServerRequest alloc] initWithRequest:request onSuccess:successCallback onFailure:failureCallback] request];
 }
 
 - (void)vote:(SDVote)vote
      content:(NSString *)contentId
         user:(NSString *)userId
-    callback:(ServerCallback)callback
 {
     NSDictionary *data = @{@"content_id":   contentId,
                            @"user_id":      userId,
@@ -80,8 +78,7 @@
     NSMutableURLRequest *request = [self createRequestForEndpoint:@"/votes"];
     [self preparePostRequest:request withPayload:payload];
     
-    SDServerRequest *serverRequest = [[SDServerRequest alloc] initWithRequest:request callback:callback];
-    [serverRequest request];
+    [[[SDServerRequest alloc] initWithRequest:request onSuccess:nil onFailure:nil] request];
 }
 
 # pragma mark - Private

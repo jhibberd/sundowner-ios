@@ -120,7 +120,7 @@
     // stop getting location updates if the view disappears (if the user cancels the composition view
     // for example
     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
-    [app.location2 stopUpdatingLocationAndReturnBest];
+    [app.location2 stopUpdatingLocation];
     
     // stop receiving keyboard notifications
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -152,16 +152,27 @@
     NSString *userId = [defaults stringForKey:@"userId"];
     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
     CLLocation *bestLocation = [app.location2 stopUpdatingLocationAndReturnBest];
+    if (!bestLocation) {
+        [SDToast toast:@"CANNOT_GET_LOCATION"];
+        [_acceptButton setEnabled:YES];
+        [_backButton setEnabled:YES];
+        return;
+    }
     [app.server setContent:text
                        url:url
                   location:bestLocation
                       user:userId
-                  callback:^(NSDictionary *response) {
-                     
-                      // TODO check response
-                      // TODO if fail alert user, reanable buttons and stay on view
-                      [self closeView];
-                  }];
+                 onSuccess:^(NSDictionary *response) {
+                     // notify the user of the successful post and return to the read view
+                     [SDToast toast:NSLocalizedString(@"CONTENT_POSTED", nil)];
+                     [self closeView];
+                 }
+                 onFailure:^(NSDictionary *response) {
+                     // enable the nav buttons to allow the user to return to the read view or
+                     // retry the submission
+                     [_acceptButton setEnabled:YES];
+                     [_backButton setEnabled:YES];
+                 }];
 }
 
 - (void)closeView
@@ -169,8 +180,10 @@
     [self.navigationController popViewControllerAnimated:YES];
 }
 
-- (void)failedToGetBestLocation
+- (void)locationManagerFailed
 {
+    // the location manager failed and stopped (which shouldn't happen) so return to the read
+    // view so that the user can try again
     [SDToast toast:@"CANNOT_GET_LOCATION"];
     [self closeView];
 }

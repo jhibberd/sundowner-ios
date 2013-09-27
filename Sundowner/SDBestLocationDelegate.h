@@ -3,5 +3,5 @@
 #import "SDBestLocation.h"
 
 @protocol SDBestLocationDelegate <NSObject>
-- (void)failedToGetBestLocation;
+- (void)locationManagerFailed;
 @end
