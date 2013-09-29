@@ -8,10 +8,7 @@
 @implementation SDAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
-    // TODO deprecated
-    //self.location2 = [[SDBestLocation alloc] init];
-    
+{    
     self.location = [[SDLocation alloc] init];
     self.server = [[SDServer alloc] init];
     

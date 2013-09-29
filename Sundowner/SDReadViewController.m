@@ -11,10 +11,21 @@
 @interface SDReadViewController ()
 @end
 
+// TODO functions for transitioning between different states
+typedef enum {
+    SDReadViewUnknown = 0,
+    SDReadViewStateNormal,
+    SDReadViewStateNoContent,
+    SDReadViewStateLocationServicesUnavailable
+} SDReadViewState;
+
 @implementation SDReadViewController {
     NSMutableArray *_content;
     UILabel *_noContentLabel;
+    UILabel *_locationServicesUnavailableView;
     SDSameLocationContentRefreshTimer *_sameLocationContentRefreshTimer;
+    UIBarButtonItem *_composeItem;
+    SDReadViewState _state;
 }
 
 - (void)viewDidLoad
@@ -29,9 +40,15 @@
     _noContentLabel.textAlignment = NSTextAlignmentCenter;
     _noContentLabel.textColor = [UIColor backgroundTextColor];
     
+    // construct the label to show when location services are unavailable
+    _locationServicesUnavailableView = [[UILabel alloc] init];
+    _locationServicesUnavailableView.text = NSLocalizedString(@"LOCATION_SERIVCES_UNAVAILABLE", nil);
+    _locationServicesUnavailableView.textAlignment = NSTextAlignmentCenter;
+    _locationServicesUnavailableView.textColor = [UIColor backgroundTextColor];
+    
     // compose button in navigation bar        
-    UIBarButtonItem *composeItem = [UIBarButtonItem itemComposeForTarget:self action:@selector(composeButtonWasClicked)];
-    [self.navigationItem setRightBarButtonItem:composeItem];
+    _composeItem = [UIBarButtonItem itemComposeForTarget:self action:@selector(composeButtonWasClicked)];
+    [self.navigationItem setRightBarButtonItem:_composeItem];
     
     [self.tableView setContentInset:UIEdgeInsetsMake(kSDContentCellVerticalPadding, 0, kSDContentCellVerticalPadding, 0)];
     
@@ -50,22 +67,52 @@
 
 # pragma mark Refreshing Content
 
+- (void)locationsServicesDidBecomeAvailable:(NSNotification *)notification
+{
+    NSLog(@"Location services did become available");
+    self.tableView.backgroundView = nil;
+    [self.navigationItem setRightBarButtonItem:_composeItem];
+    [_sameLocationContentRefreshTimer start];
+}
+
+- (void)locationsServicesDidBecomeUnavailable:(NSNotification *)notification
+{
+    NSLog(@"Location services did become unavailable");
+    self.tableView.backgroundView = _locationServicesUnavailableView;
+    [self.navigationItem setRightBarButtonItem:nil];
+    [_content removeAllObjects];
+    [self.tableView reloadData];
+    [_sameLocationContentRefreshTimer stop];
+}
+
 - (void)viewWillAppear:(BOOL)animated
 {
-    [_sameLocationContentRefreshTimer start];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(locationDidChange:)
-                                                 name:kSDLocationDidChangeNotification
-                                               object:nil];
+    [super viewWillAppear:animated];
+    
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(locationsServicesDidBecomeAvailable:)
+                               name:kSDLocationAvailableNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(locationsServicesDidBecomeUnavailable:)
+                               name:kSDLocationUnavailableNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(locationDidChange:)
+                               name:kSDLocationDidChangeNotification
+                             object:nil];
     
     // the view has just been shown so refresh content for the current location
+    [_sameLocationContentRefreshTimer start];
     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
     [app.location flushLocationIfAvailable];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
 {
-    // no longer listen for location updates
+    // stop services that are no longer required now that the view has disappeared
+    [super viewWillDisappear:animated];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [_sameLocationContentRefreshTimer stop];
 }
@@ -107,13 +154,7 @@
                            if (self.tableView.backgroundView != expectedBackgroundView) {
                                self.tableView.backgroundView = expectedBackgroundView;
                            }
-                           
-                           // stop refresh animation if one is in progress
-                           if (self.refreshControl.refreshing)
-                               [self.refreshControl endRefreshing];
-                           
                        }];
-
 }
  
 # pragma mark Content Interaction

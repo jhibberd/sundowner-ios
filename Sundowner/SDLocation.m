@@ -2,8 +2,16 @@
 #import <CoreLocation/CoreLocation.h>
 #import "SDLocation.h"
 
-NSString *const kSDLocationDidChangeNotification = @"kSDLocationDidChangeNotificaiton";
+NSString *const kSDLocationDidChangeNotification = @"kSDLocationDidChangeNotification";
+NSString *const kSDLocationAvailableNotification = @"kSDLocationAvailableNotification";
+NSString *const kSDLocationUnavailableNotification = @"kSDLocationUnavailableNotification";
 static NSTimeInterval const kSDMinSecondsBetweenLocationUpdates = 20;
+
+typedef enum {
+    SDLocationServicesAvailabilityUnknown = 0,
+    SDLocationServicesAvailable,
+    SDLocationServicesUnavailable
+} SDLocationServicesAvailabilityType;
 
 @implementation SDLocation {
     CLLocationManager *_locationManager;
@@ -11,6 +19,7 @@ static NSTimeInterval const kSDMinSecondsBetweenLocationUpdates = 20;
     NSDate *_lastLocationNotificationTime;
     NSTimer *_pendingLocationUpdateTimer;
     CLLocation *_currentLocation;
+    SDLocationServicesAvailabilityType _locationServicesAvailability;
 }
 
 # pragma mark Public
@@ -23,6 +32,7 @@ static NSTimeInterval const kSDMinSecondsBetweenLocationUpdates = 20;
         _locationManager.delegate = self;
         _locationManager.distanceFilter = kCLDistanceFilterNone;
         _locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+        _locationServicesAvailability = SDLocationServicesAvailabilityUnknown;
     }
     return self;
 }
@@ -62,8 +72,14 @@ static NSTimeInterval const kSDMinSecondsBetweenLocationUpdates = 20;
 
 - (void)newValidLocationReceived:(CLLocation *)location
 {
-    NSLog(@"Location update");
+    if (_locationServicesAvailability != SDLocationServicesAvailable) {
+         _locationServicesAvailability = SDLocationServicesAvailable;
+        [[NSNotificationCenter defaultCenter] postNotificationName:kSDLocationAvailableNotification
+                                                            object:self
+                                                          userInfo:nil];
+    }
     
+    NSLog(@"Location update");
     _currentLocation = location;
     
     // stop any pending location update timer that may be waiting to call this method
@@ -130,9 +146,17 @@ static NSTimeInterval const kSDMinSecondsBetweenLocationUpdates = 20;
             break;
             
         case kCLErrorDenied:
-            // the user has denied the application use of the location service
+            // The user has denied the application use of the location service. The availability of
+            // location services will be checked by each UIViewController during viewWillAppear and
+            // appropriate action will be taken there is the services are unavailable.
+            NSLog(@"kCLErrorDenied");
             [self stop];
-            // TODO present modal warning that location services are unavailable (top to try again)
+            if (_locationServicesAvailability != SDLocationServicesUnavailable) {
+                _locationServicesAvailability = SDLocationServicesUnavailable;
+                [[NSNotificationCenter defaultCenter] postNotificationName:kSDLocationUnavailableNotification
+                                                                    object:self
+                                                                  userInfo:nil];
+            }
             break;
             
         default:

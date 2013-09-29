@@ -46,7 +46,7 @@
     CGRect frame = CGRectMake(kSDContentCellHorizontalPadding, 0, width, 0);
     _composeContentView = [[SDComposeContentView alloc] initWithFrame:frame];
     [_scrollView addSubview:_composeContentView];
-
+    
     // auto layout constraints
     NSDictionary *viewsDictionary = NSDictionaryOfVariableBindings(_scrollView, _composeContentView);
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_scrollView]|"
@@ -91,9 +91,17 @@
     [_composeContentView resignFirstResponder];
 }
 
+- (void)locationsServicesDidBecomeUnavailable:(NSNotification *)notification
+{
+    NSLog(@"Location services did become unavailable");
+    [self closeView];
+}
+
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    
+    // set keyboard focus to content UITextView control
     [_composeContentView becomeFirstResponder];
     
     // get notified when the keyboard appears/disappears so that the scroll view's frame can be adjusted
@@ -105,6 +113,10 @@
     [notificationCenter addObserver:self
                            selector:@selector(keyboardWillHide:)
                                name:UIKeyboardWillHideNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(locationsServicesDidBecomeUnavailable:)
+                               name:kSDLocationUnavailableNotification
                              object:nil];
 }
 

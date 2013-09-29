@@ -8,3 +8,4 @@
 "CONTENT_POSTED" = "Posted";
 "LOCATION_UNKNOWN" = "Couldn't find your current location.";
 "LOCATION_DENIED" = "You need to enable Location Services for this app.";
+"LOCATION_SERIVCES_UNAVAILABLE" = "Location Services unavailable";

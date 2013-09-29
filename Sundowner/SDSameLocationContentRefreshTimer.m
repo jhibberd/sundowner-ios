@@ -1,7 +1,8 @@
 
 #import "SDSameLocationContentRefreshTimer.h"
 
-static NSTimeInterval const kSDSecondsBeforeRefreshDue = 20;
+// should be slightly different to location update seconds to avoid double request
+static NSTimeInterval const kSDSecondsBeforeRefreshDue = 22;
 
 @implementation SDSameLocationContentRefreshTimer {
     NSTimer *_timer;
