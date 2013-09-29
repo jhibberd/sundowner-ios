@@ -1,8 +1,7 @@
 
 #import "SDAppDelegate.h"
-#import "SDBestLocation.h"
-#import "SDLocation.h"
 #import "SDServer.h"
+#import "SDLocation.h"
 #import "UIColor+SDColor.h"
 #import "UIImage+GTImage.h"
 
@@ -10,7 +9,9 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    self.location2 = [[SDBestLocation alloc] init];
+    // TODO deprecated
+    //self.location2 = [[SDBestLocation alloc] init];
+    
     self.location = [[SDLocation alloc] init];
     self.server = [[SDServer alloc] init];
     
@@ -40,6 +41,16 @@
     [appearance setTitleTextAttributes:textAttr];
     
     return YES;
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application
+{
+    [self.location start];
+}
+
+- (void)applicationWillResignActive:(UIApplication *)application
+{
+    [self.location stop];
 }
 
 @end

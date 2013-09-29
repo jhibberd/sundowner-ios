@@ -2,6 +2,8 @@
 #import "SDAppDelegate.h"
 #import "SDContentCell.h"
 #import "SDReadViewController.h"
+#import "SDSameLocationContentRefreshTimer.h"
+#import "SDLocation.h"
 #import "SDToast.h"
 #import "UIBarButtonItem+SDBarButtonItem.h"
 #import "UIColor+SDColor.h"
@@ -12,6 +14,7 @@
 @implementation SDReadViewController {
     NSMutableArray *_content;
     UILabel *_noContentLabel;
+    SDSameLocationContentRefreshTimer *_sameLocationContentRefreshTimer;
 }
 
 - (void)viewDidLoad
@@ -35,12 +38,8 @@
     _content = [[NSMutableArray alloc] init];
     [self.tableView registerClass:[SDContentCell class] forCellReuseIdentifier:@"Content"];
     
-    // add handler for refreshing gesture
-    [self.refreshControl addTarget:self
-                            action:@selector(refreshContent)
-                  forControlEvents:UIControlEventValueChanged];
-    
-    [self refreshContent];
+    _sameLocationContentRefreshTimer = [[SDSameLocationContentRefreshTimer alloc] init];
+    _sameLocationContentRefreshTimer.delegate = self;
 }
 
 - (void)composeButtonWasClicked
@@ -49,56 +48,74 @@
     [self performSegueWithIdentifier:identifier sender:nil];
 }
 
+# pragma mark Refreshing Content
+
 - (void)viewWillAppear:(BOOL)animated
 {
-    // request to be notified when the application enters the foreground so that the content can be
-    // refreshed
+    [_sameLocationContentRefreshTimer start];
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(applicationWillEnterForeground:)
-                                                 name:UIApplicationWillEnterForegroundNotification
+                                             selector:@selector(locationDidChange:)
+                                                 name:kSDLocationDidChangeNotification
                                                object:nil];
+    
+    // the view has just been shown so refresh content for the current location
+    SDAppDelegate *app = [UIApplication sharedApplication].delegate;
+    [app.location flushLocationIfAvailable];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
 {
-    // no longer listen for UIApplicationWillEnterForegroundNotification
+    // no longer listen for location updates
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [_sameLocationContentRefreshTimer stop];
 }
 
-- (void)applicationWillEnterForeground:(NSNotification *)notification
+- (void)locationDidChange:(NSNotification *)notification
 {
-    [self refreshContent];
+    NSLog(@"Received notification that location changed");
+    // the location changed which will result in a request for new content to reset the countdown that
+    // guards against stale content
+    [_sameLocationContentRefreshTimer locationDidChange];
+    [self refreshContentForLocation:notification.userInfo[@"location"]];
 }
 
-- (void)refreshContent
-{    
+- (void)shouldRefreshContentAsLocationIsStillSame
+{
+    SDAppDelegate *app = [UIApplication sharedApplication].delegate;
+    [app.location flushLocationIfAvailable];
+}
+ 
+- (void)refreshContentForLocation:(CLLocation *)location
+{
+    NSLog(@"Requesting content for lng=%f lat=%f accuracy=%f",
+          location.coordinate.longitude, location.coordinate.latitude, location.horizontalAccuracy);
+    
     NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
     NSString *userId = [defaults stringForKey:@"userId"];
     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
     
-    [app.location getCurrentLocationThen:^(CLLocation *currentLocation) {
-        [app.server getContentNearby:currentLocation.coordinate
-                                user:userId
-                           onSuccess:^(NSDictionary *response) {
-                                
-                                // TODO what if there is a server error? Caught by the request class?
-                                _content = response[@"data"];
-                                [self.tableView reloadData];
-                                
-                                // display no content label if necessary
-                                UIView *expectedBackgroundView = [_content count] > 0 ? nil : _noContentLabel;
-                                if (self.tableView.backgroundView != expectedBackgroundView) {
-                                    self.tableView.backgroundView = expectedBackgroundView;
-                                }
-                                
-                                // stop refresh animation if one is in progress
-                                if (self.refreshControl.refreshing)
-                                    [self.refreshControl endRefreshing];
-                                
-                            }];
-    }];
-}
+    [app.server getContentNearby:location.coordinate
+                            user:userId
+                       onSuccess:^(NSDictionary *response) {
+                           
+                           // TODO what if there is a server error? Caught by the request class?
+                           _content = response[@"data"];
+                           [self.tableView reloadData];
+                           
+                           // display no content label if necessary
+                           UIView *expectedBackgroundView = [_content count] > 0 ? nil : _noContentLabel;
+                           if (self.tableView.backgroundView != expectedBackgroundView) {
+                               self.tableView.backgroundView = expectedBackgroundView;
+                           }
+                           
+                           // stop refresh animation if one is in progress
+                           if (self.refreshControl.refreshing)
+                               [self.refreshControl endRefreshing];
+                           
+                       }];
 
+}
+ 
 # pragma mark Content Interaction
 
 - (void)contentURLRequested:(NSDictionary *)content

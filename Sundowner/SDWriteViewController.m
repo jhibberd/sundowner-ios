@@ -96,11 +96,6 @@
     [super viewWillAppear:animated];
     [_composeContentView becomeFirstResponder];
     
-    // during the time that the user is composing the content attempt to get an accurate location on
-    // the device
-    SDAppDelegate *app = [UIApplication sharedApplication].delegate;
-    [app.location2 startUpdatingLocation:self];
-    
     // get notified when the keyboard appears/disappears so that the scroll view's frame can be adjusted
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self
@@ -116,11 +111,6 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    
-    // stop getting location updates if the view disappears (if the user cancels the composition view
-    // for example
-    SDAppDelegate *app = [UIApplication sharedApplication].delegate;
-    [app.location2 stopUpdatingLocation];
     
     // stop receiving keyboard notifications
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -147,20 +137,22 @@
     [_acceptButton setEnabled:NO];
     [_backButton setEnabled:NO];
     
-    // first obtain the device's current location then post the object to the server
-    NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
-    NSString *userId = [defaults stringForKey:@"userId"];
+    // get the current location
     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
-    CLLocation *bestLocation = [app.location2 stopUpdatingLocationAndReturnBest];
-    if (!bestLocation) {
+    CLLocation *currentLocation = [app.location getCurrentLocation];
+    if (!currentLocation) {
         [SDToast toast:@"CANNOT_GET_LOCATION"];
         [_acceptButton setEnabled:YES];
         [_backButton setEnabled:YES];
         return;
     }
+    
+    // first obtain the device's current location then post the object to the server
+    NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
+    NSString *userId = [defaults stringForKey:@"userId"];
     [app.server setContent:text
                        url:url
-                  location:bestLocation
+                  location:currentLocation
                       user:userId
                  onSuccess:^(NSDictionary *response) {
                      // notify the user of the successful post and return to the read view
@@ -178,14 +170,6 @@
 - (void)closeView
 {
     [self.navigationController popViewControllerAnimated:YES];
-}
-
-- (void)locationManagerFailed
-{
-    // the location manager failed and stopped (which shouldn't happen) so return to the read
-    // view so that the user can try again
-    [SDToast toast:@"CANNOT_GET_LOCATION"];
-    [self closeView];
 }
 
 @end
