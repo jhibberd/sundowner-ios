@@ -177,15 +177,7 @@ typedef enum {
 }
 
 - (void)contentVotedDown:(NSDictionary *)content
-{
-    // animate the removal of the content from the table and remove it from the content array
-    NSUInteger index = [_content indexOfObject:content];
-    [self.tableView beginUpdates];
-    [_content removeObjectAtIndex:index];
-    [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]]
-                          withRowAnimation:UITableViewRowAnimationRight];
-    [self.tableView endUpdates];
-    
+{    
     // notify the server
     NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
     NSString *userId = [defaults stringForKey:@"userId"];

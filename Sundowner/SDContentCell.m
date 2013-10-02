@@ -58,10 +58,10 @@ static NSUInteger const kSDLikeViewHeight =         66.5;
                                                                                  metrics:nil
                                                                                    views:variableBindings]];
         
-        UIGestureRecognizer *panGestureRecognizer =
-            [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(respondToPanGesture:)];
-        panGestureRecognizer.delegate = self;
-        [self addGestureRecognizer:panGestureRecognizer];
+        UILongPressGestureRecognizer *longPressGestureRecogniser =
+            [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(respondToLongPressGesture:)];
+        longPressGestureRecogniser.minimumPressDuration = 1.5;
+        [self addGestureRecognizer:longPressGestureRecogniser];
         
         UITapGestureRecognizer *singleTapGestureRecogniser =
             [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(respondToSingleTapGesture:)];
@@ -69,7 +69,7 @@ static NSUInteger const kSDLikeViewHeight =         66.5;
         [self addGestureRecognizer:singleTapGestureRecogniser];
         
         UITapGestureRecognizer *doubleTapGestureRecogniser =
-        [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(respondToDoubleTapGesture:)];
+            [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(respondToDoubleTapGesture:)];
         doubleTapGestureRecogniser.numberOfTapsRequired = 2;
         [self addGestureRecognizer:doubleTapGestureRecogniser];
         
@@ -88,6 +88,14 @@ static NSUInteger const kSDLikeViewHeight =         66.5;
 }
 
 # pragma mark Handling Gestures
+
+- (void)respondToLongPressGesture:(UILongPressGestureRecognizer *)recognizer
+{
+    if (recognizer.state == UIGestureRecognizerStateBegan) {
+        [self.delegate contentVotedDown:_content];
+        [_contentView beginVoteDownAnimation];
+    }
+}
 
 - (void)respondToDoubleTapGesture:(UIGestureRecognizer *)recognizer
 {    
@@ -119,60 +127,6 @@ static NSUInteger const kSDLikeViewHeight =         66.5;
 {
     if (_content[@"url"] != nil) {
         [self.delegate contentURLRequested:_content];
-    }
-}
-
-- (void)respondToPanGesture:(UIPanGestureRecognizer *)recognizer
-{
-    switch (recognizer.state) {
-            
-        case UIGestureRecognizerStateBegan:
-            _originalCenter = self.center;
-            break;
-            
-        case UIGestureRecognizerStateChanged: {
-            CGPoint translation = [recognizer translationInView:self];
-            if (translation.x > 0) {
-                self.center = CGPointMake(_originalCenter.x + translation.x, _originalCenter.y);
-                // if the content has been dragged at least half the cell width then proceed to
-                // vote down the content when the user releases their finger
-                _voteDownOnDragRelease = translation.x > (self.frame.size.width / 2);
-            } else {
-                self.center = _originalCenter;
-                _voteDownOnDragRelease = NO;
-            }
-            break;
-        }
-            
-        case UIGestureRecognizerStateEnded: {
-            if (_voteDownOnDragRelease) {
-                // inform the containing table that the content has been voted down so that it can
-                // be removed
-                [self.delegate contentVotedDown:_content];
-            } else {
-                // return the content to its original position
-                [UIView animateWithDuration:0.2 animations:^{
-                    self.center = _originalCenter;
-                }];
-            }
-            break;
-        }
-            
-        default:
-            break;
-    }
-}
-
-- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)recognizer
-{
-    // prevent vertical scrolling otherwise table scrolling won't work only allow
-    // content to be scrolled to the right
-    if ([recognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
-        CGPoint translation = [(UIPanGestureRecognizer *)recognizer translationInView:self];
-        return fabs(translation.x) > fabs(translation.y) && translation.x > 0;
-        
-    } else {
-        return YES;
     }
 }
 

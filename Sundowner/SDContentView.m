@@ -6,8 +6,9 @@
 CGFloat const kSDContentViewPadding = 10;
 
 @implementation SDContentView {
-    UILabel *_text;
-    UILabel *_author;
+    UILabel *_textLabel;
+    UILabel *_authorLabel;
+    NSMutableAttributedString *_text;
 }
 
 // A UITableViewController needs to know in advance (of autolayout) the heights of all visible cells.
@@ -34,25 +35,25 @@ CGFloat const kSDContentViewPadding = 10;
         // disable older layout mechanism otherwise auto layout doesn't work
         self.translatesAutoresizingMaskIntoConstraints = NO;
         
-        _text = [[UILabel alloc] init];
-        _text.font = [UIFont titleFont];
-        _text.translatesAutoresizingMaskIntoConstraints = NO;
-        _text.numberOfLines = 0;
-        [self addSubview:_text];
+        _textLabel = [[UILabel alloc] init];
+        _textLabel.font = [UIFont titleFont];
+        _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        _textLabel.numberOfLines = 0;
+        [self addSubview:_textLabel];
         
-        _author = [[UILabel alloc] init];
-        _author.textColor = [UIColor lightGrayColor];
-        _author.font = [UIFont normalFont];
-        _author.translatesAutoresizingMaskIntoConstraints = NO;
-        _author.numberOfLines = 0;
-        [self addSubview:_author];
+        _authorLabel = [[UILabel alloc] init];
+        _authorLabel.textColor = [UIColor lightGrayColor];
+        _authorLabel.font = [UIFont normalFont];
+        _authorLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        _authorLabel.numberOfLines = 0;
+        [self addSubview:_authorLabel];
         
         // define layout constraints
-        NSDictionary *variableBindings = NSDictionaryOfVariableBindings(self, _text, _author);
+        NSDictionary *variableBindings = NSDictionaryOfVariableBindings(self, _textLabel, _authorLabel);
         NSArray *constaintFormats = @[
-            [NSString stringWithFormat:@"V:|-%f-[_text]-0-[_author]-%f-|", kSDContentViewPadding, kSDContentViewPadding],
-            [NSString stringWithFormat:@"|-%f-[_text]-%f-|", kSDContentViewPadding, kSDContentViewPadding],
-            [NSString stringWithFormat:@"|-%f-[_author]-%f-|", kSDContentViewPadding, kSDContentViewPadding],
+            [NSString stringWithFormat:@"V:|-%f-[_textLabel]-0-[_authorLabel]-%f-|", kSDContentViewPadding, kSDContentViewPadding],
+            [NSString stringWithFormat:@"|-%f-[_textLabel]-%f-|", kSDContentViewPadding, kSDContentViewPadding],
+            [NSString stringWithFormat:@"|-%f-[_authorLabel]-%f-|", kSDContentViewPadding, kSDContentViewPadding],
             [NSString stringWithFormat:@"[self(%f)]", self.frame.size.width]
             ];
         for (NSString *constaintFormat in constaintFormats) {
@@ -64,11 +65,11 @@ CGFloat const kSDContentViewPadding = 10;
         
         // ensure height of UILabel grows to fit the text with autolayout
         // http://stackoverflow.com/questions/16009405/uilabel-sizetofit-doesnt-work-with-autolayout-ios6
-        _text.lineBreakMode = NSLineBreakByWordWrapping;
-        _text.preferredMaxLayoutWidth = self.frame.size.width - (kSDContentViewPadding *2);
-        [_text setContentHuggingPriority:UILayoutPriorityRequired
+        _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
+        _textLabel.preferredMaxLayoutWidth = self.frame.size.width - (kSDContentViewPadding *2);
+        [_textLabel setContentHuggingPriority:UILayoutPriorityRequired
                                  forAxis:UILayoutConstraintAxisVertical];
-        [_text setContentCompressionResistancePriority:UILayoutPriorityRequired
+        [_textLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
                                                forAxis:UILayoutConstraintAxisVertical];
     }
     return self;
@@ -76,9 +77,36 @@ CGFloat const kSDContentViewPadding = 10;
  
 - (void)setContent:(NSDictionary *)content
 {
-    _text.text = content[@"text"];
-    _text.textColor = content[@"url"] == [NSNull null] ? [UIColor textColor] : [UIColor linkColor];
-    _author.text = [NSString stringWithFormat:@"by %@", content[@"username"]];
+    _text = [[NSMutableAttributedString alloc] initWithString:content[@"text"]];
+    _textLabel.attributedText = _text;
+    _textLabel.textColor = content[@"url"] == [NSNull null] ? [UIColor textColor] : [UIColor linkColor];
+    _authorLabel.text = [NSString stringWithFormat:@"by %@", content[@"username"]];
+}
+
+- (void)beginVoteDownAnimation
+{
+    // sadly neither strikethrough nor text color are animatable properties
+    [_text addAttribute:NSStrikethroughStyleAttributeName
+                  value:@(NSUnderlineStyleSingle)
+                  range:NSMakeRange(0, [_text length])];
+    _textLabel.attributedText = _text;
+    _textLabel.textColor = [UIColor backgroundTextColor];
+
+    // visually restore the text label following a short delay
+    [NSTimer scheduledTimerWithTimeInterval:3
+                                     target:self
+                                   selector:@selector(strikethroughTextWaitComplete:)
+                                   userInfo:nil
+                                    repeats:NO];
+}
+
+- (void)strikethroughTextWaitComplete:(NSTimer *)timer
+{
+    [_text addAttribute:NSStrikethroughStyleAttributeName
+                  value:@(NSUnderlineStyleNone)
+                  range:NSMakeRange(0, [_text length])];
+    _textLabel.attributedText = _text;
+    _textLabel.textColor = [UIColor textColor];
 }
 
 @end
