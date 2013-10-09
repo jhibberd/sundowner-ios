@@ -22,11 +22,10 @@
 # pragma mark - Public
 
 - (void)getContentNearby:(CLLocationCoordinate2D)coordinate
-                    user:(NSString *)userId
                onSuccess:(ServerCallback)successCallback
 {
-    NSURLRequest *request = [self createRequestForEndpoint:@"/content?lng=%f&lat=%f&user_id=%@",
-                             coordinate.longitude, coordinate.latitude, userId];
+    NSURLRequest *request = [self createRequestForEndpoint:@"/content?lng=%f&lat=%f",
+                             coordinate.longitude, coordinate.latitude];
     [[[SDServerRequest alloc] initWithRequest:request onSuccess:successCallback onFailure:nil] request];
 }
 

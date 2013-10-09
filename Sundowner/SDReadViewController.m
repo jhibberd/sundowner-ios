@@ -137,12 +137,9 @@ typedef enum {
     NSLog(@"Requesting content for lng=%f lat=%f accuracy=%f",
           location.coordinate.longitude, location.coordinate.latitude, location.horizontalAccuracy);
     
-    NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
-    NSString *userId = [defaults stringForKey:@"userId"];
     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
     
     [app.server getContentNearby:location.coordinate
-                            user:userId
                        onSuccess:^(NSDictionary *response) {
                            
                            // TODO what if there is a server error? Caught by the request class?
