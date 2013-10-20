@@ -4,6 +4,7 @@
 #import "SDContentTextView.h"
 #import "SDLocalNativeAccountData.h"
 #import "SystemVersion.h"
+#import "UIColor+SDColor.h"
 #import "UIFont+SDFont.h"
 
 @implementation SDComposeContentView {
@@ -18,7 +19,6 @@
     if (self) {
         
         self.backgroundColor = [UIColor whiteColor];
-        self.layer.cornerRadius = 3.0;
         
         // disable older layout mechanism otherwise auto layout doesn't work
         self.translatesAutoresizingMaskIntoConstraints = NO;
@@ -48,7 +48,7 @@
         // construct the author string
         _authorLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, componentWidth, 0)];
         _authorLabel.text = [SDLocalNativeAccountData load].userName;
-        _authorLabel.textColor = [UIColor lightGrayColor];
+        _authorLabel.textColor = [UIColor subtextColor];
         _authorLabel.font = [UIFont normalFont];
         _authorLabel.translatesAutoresizingMaskIntoConstraints = NO;
         [_authorLabel sizeToFit];

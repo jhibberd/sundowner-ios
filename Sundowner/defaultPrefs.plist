@@ -4,7 +4,5 @@
 <dict>
 	<key>port</key>
 	<string>8050</string>
-	<key>username</key>
-	<string>iPhone</string>
 </dict>
 </plist>

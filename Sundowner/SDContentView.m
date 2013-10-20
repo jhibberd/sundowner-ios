@@ -2,6 +2,7 @@
 #import "SDContentView.h"
 #import "UIColor+SDColor.h"
 #import "UIFont+SDFont.h"
+#import "UILabel+SDLabel.h"
 
 CGFloat const kSDContentViewPadding = 10;
 
@@ -30,19 +31,21 @@ CGFloat const kSDContentViewPadding = 10;
     if (self) {
 
         self.backgroundColor = [UIColor whiteColor];
-        self.layer.cornerRadius = 3.0;
         
         // disable older layout mechanism otherwise auto layout doesn't work
         self.translatesAutoresizingMaskIntoConstraints = NO;
         
         _textLabel = [[UILabel alloc] init];
+        _textLabel.textColor = [UIColor textColor];
         _textLabel.font = [UIFont titleFont];
         _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
         _textLabel.numberOfLines = 0;
+        CGFloat width = self.frame.size.width - (kSDContentViewPadding *2);
+        [_textLabel autoGrowHeightCompatForWidth:width];
         [self addSubview:_textLabel];
         
         _authorLabel = [[UILabel alloc] init];
-        _authorLabel.textColor = [UIColor lightGrayColor];
+        _authorLabel.textColor = [UIColor subtextColor];
         _authorLabel.font = [UIFont normalFont];
         _authorLabel.translatesAutoresizingMaskIntoConstraints = NO;
         _authorLabel.numberOfLines = 0;
@@ -62,15 +65,6 @@ CGFloat const kSDContentViewPadding = 10;
                                                                          metrics:nil
                                                                            views:variableBindings]];
         }
-        
-        // ensure height of UILabel grows to fit the text with autolayout
-        // http://stackoverflow.com/questions/16009405/uilabel-sizetofit-doesnt-work-with-autolayout-ios6
-        _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
-        _textLabel.preferredMaxLayoutWidth = self.frame.size.width - (kSDContentViewPadding *2);
-        [_textLabel setContentHuggingPriority:UILayoutPriorityRequired
-                                 forAxis:UILayoutConstraintAxisVertical];
-        [_textLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                               forAxis:UILayoutConstraintAxisVertical];
     }
     return self;
 }
@@ -79,7 +73,6 @@ CGFloat const kSDContentViewPadding = 10;
 {
     _text = [[NSMutableAttributedString alloc] initWithString:content[@"text"]];
     _textLabel.attributedText = _text;
-    _textLabel.textColor = content[@"url"] == [NSNull null] ? [UIColor textColor] : [UIColor linkColor];
     _authorLabel.text = content[@"username"];
 }
 
@@ -90,7 +83,7 @@ CGFloat const kSDContentViewPadding = 10;
                   value:@(NSUnderlineStyleSingle)
                   range:NSMakeRange(0, [_text length])];
     _textLabel.attributedText = _text;
-    _textLabel.textColor = [UIColor backgroundTextColor];
+    _textLabel.textColor = [UIColor subtextColor];
 
     // visually restore the text label following a short delay
     [NSTimer scheduledTimerWithTimeInterval:3

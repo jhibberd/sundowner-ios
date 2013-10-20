@@ -28,7 +28,7 @@ CGFloat const kGTIconButtonLineWidth = 3.0;
     CGContextClearRect(c, rect);
     CGContextSaveGState(c);
     CGContextSetLineWidth(c, kGTIconButtonLineWidth);
-    CGContextSetStrokeColorWithColor(c, [UIColor linkColor].CGColor);
+    CGContextSetStrokeColorWithColor(c, [UIColor navIconColor].CGColor);
     CGContextAddPath(c, _path);
     CGContextStrokePath(c);
     CGContextRestoreGState(c);

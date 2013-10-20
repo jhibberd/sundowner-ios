@@ -3,8 +3,9 @@
 
 @interface UIColor (SDColor)
 + (UIColor *)textColor;
-+ (UIColor *)linkColor;
 + (UIColor *)likeColor;
 + (UIColor *)backgroundColor;
 + (UIColor *)backgroundTextColor;
++ (UIColor *)navIconColor;
++ (UIColor *)subtextColor;
 @end
