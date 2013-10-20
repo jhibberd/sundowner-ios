@@ -2,6 +2,7 @@
 #import "SDContentView.h"
 #import "SDComposeContentView.h"
 #import "SDContentTextView.h"
+#import "SDLocalNativeAccountData.h"
 #import "SystemVersion.h"
 #import "UIFont+SDFont.h"
 
@@ -45,11 +46,8 @@
         [self addSubview:_contentTextView];
         
         // construct the author string
-        NSString *username = [[[NSUserDefaults class] standardUserDefaults] stringForKey:@"username"];
-        NSString *authorText = [NSString stringWithFormat:@"by %@", username];
-        
         _authorLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, componentWidth, 0)];
-        _authorLabel.text = authorText;
+        _authorLabel.text = [SDLocalNativeAccountData load].userName;
         _authorLabel.textColor = [UIColor lightGrayColor];
         _authorLabel.font = [UIFont normalFont];
         _authorLabel.translatesAutoresizingMaskIntoConstraints = NO;

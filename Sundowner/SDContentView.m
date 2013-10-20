@@ -17,7 +17,7 @@ CGFloat const kSDContentViewPadding = 10;
 + (CGFloat)calculateContentHeight:(NSDictionary *)content constrainedByWidth:(CGFloat)width
 {
     NSString *titleText = content[@"text"];
-    NSString *authorText = [NSString stringWithFormat:@"by %@", content[@"username"]];
+    NSString *authorText = content[@"username"];
     CGSize constraint = CGSizeMake(width - (kSDContentViewPadding *2), MAXFLOAT);
     CGSize titleSize = [titleText sizeWithFont:[UIFont titleFont] constrainedToSize:constraint];
     CGSize authorSize = [authorText sizeWithFont:[UIFont normalFont] constrainedToSize:constraint];
@@ -80,7 +80,7 @@ CGFloat const kSDContentViewPadding = 10;
     _text = [[NSMutableAttributedString alloc] initWithString:content[@"text"]];
     _textLabel.attributedText = _text;
     _textLabel.textColor = content[@"url"] == [NSNull null] ? [UIColor textColor] : [UIColor linkColor];
-    _authorLabel.text = [NSString stringWithFormat:@"by %@", content[@"username"]];
+    _authorLabel.text = content[@"username"];
 }
 
 - (void)beginVoteDownAnimation

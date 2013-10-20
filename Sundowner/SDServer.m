@@ -21,6 +21,24 @@
 
 # pragma mark - Public
 
+- (void)getUserId:(NSString *)facebookAccessToken
+        onSuccess:(ServerCallback)successCallback
+        onFailure:(ServerCallback)failureCallback
+{
+    NSMutableDictionary *data = [@{@"access_token": facebookAccessToken} mutableCopy];
+    
+    NSString *payload = [self jsonEncode:data];
+    if (!payload) {
+        NSLog(@"failed to json encode payload");
+        return;
+    }
+    
+    NSMutableURLRequest *request = [self createRequestForEndpoint:@"/users"];
+    [self preparePostRequest:request withPayload:payload];
+    
+    [[[SDServerRequest alloc] initWithRequest:request onSuccess:successCallback onFailure:failureCallback] request];
+}
+
 - (void)getContentNearby:(CLLocationCoordinate2D)coordinate
                onSuccess:(ServerCallback)successCallback
 {

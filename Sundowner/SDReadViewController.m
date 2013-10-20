@@ -1,8 +1,10 @@
 
 #import "SDAppDelegate.h"
 #import "SDContentCell.h"
+#import "SDFacebookSessionManager.h"
 #import "SDReadViewController.h"
 #import "SDSameLocationContentRefreshTimer.h"
+#import "SDLocalNativeAccountData.h"
 #import "SDLocation.h"
 #import "SDToast.h"
 #import "UIBarButtonItem+SDBarButtonItem.h"
@@ -46,8 +48,10 @@ typedef enum {
     _locationServicesUnavailableView.textAlignment = NSTextAlignmentCenter;
     _locationServicesUnavailableView.textColor = [UIColor backgroundTextColor];
     
-    // compose button in navigation bar        
+    // add buttons to the navigation bar
+    UIBarButtonItem *backBarButtonItem = [UIBarButtonItem itemBackForTarget:self action:@selector(backButtonWasClicked)];
     _composeItem = [UIBarButtonItem itemComposeForTarget:self action:@selector(composeButtonWasClicked)];
+    [self.navigationItem setLeftBarButtonItem:backBarButtonItem];
     [self.navigationItem setRightBarButtonItem:_composeItem];
     
     [self.tableView setContentInset:UIEdgeInsetsMake(kSDContentCellVerticalPadding, 0, kSDContentCellVerticalPadding, 0)];
@@ -57,6 +61,11 @@ typedef enum {
     
     _sameLocationContentRefreshTimer = [[SDSameLocationContentRefreshTimer alloc] init];
     _sameLocationContentRefreshTimer.delegate = self;
+}
+
+- (void)backButtonWasClicked
+{
+    [SDFacebookSessionManager closeSession];
 }
 
 - (void)composeButtonWasClicked
@@ -105,7 +114,7 @@ typedef enum {
     
     // the view has just been shown so refresh content for the current location
     [_sameLocationContentRefreshTimer start];
-    SDAppDelegate *app = [UIApplication sharedApplication].delegate;
+    SDAppDelegate *app = (SDAppDelegate *)[UIApplication sharedApplication].delegate;
     [app.location flushLocationIfAvailable];
 }
 
@@ -128,7 +137,7 @@ typedef enum {
 
 - (void)shouldRefreshContentAsLocationIsStillSame
 {
-    SDAppDelegate *app = [UIApplication sharedApplication].delegate;
+    SDAppDelegate *app = (SDAppDelegate *)[UIApplication sharedApplication].delegate;
     [app.location flushLocationIfAvailable];
 }
  
@@ -137,7 +146,7 @@ typedef enum {
     NSLog(@"Requesting content for lng=%f lat=%f accuracy=%f",
           location.coordinate.longitude, location.coordinate.latitude, location.horizontalAccuracy);
     
-    SDAppDelegate *app = [UIApplication sharedApplication].delegate;
+    SDAppDelegate *app = (SDAppDelegate *)[UIApplication sharedApplication].delegate;
     
     [app.server getContentNearby:location.coordinate
                        onSuccess:^(NSDictionary *response) {
@@ -166,19 +175,17 @@ typedef enum {
 
 - (void)contentVotedUp:(NSDictionary *)content
 {
-     // notify the server
-     NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
-     NSString *userId = [defaults stringForKey:@"userId"];
-     SDAppDelegate *app = [UIApplication sharedApplication].delegate;
-     [app.server vote:SDVoteUp content:content[@"id"] user:userId];
+    // notify the server
+    NSString *userId = [SDLocalNativeAccountData load].userId;
+    SDAppDelegate *app = (SDAppDelegate *)[UIApplication sharedApplication].delegate;
+    [app.server vote:SDVoteUp content:content[@"id"] user:userId];
 }
 
 - (void)contentVotedDown:(NSDictionary *)content
 {    
     // notify the server
-    NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
-    NSString *userId = [defaults stringForKey:@"userId"];
-    SDAppDelegate *app = [UIApplication sharedApplication].delegate;
+    NSString *userId = [SDLocalNativeAccountData load].userId;
+    SDAppDelegate *app = (SDAppDelegate *)[UIApplication sharedApplication].delegate;
     [app.server vote:SDVoteDown content:content[@"id"] user:userId];
 }
 

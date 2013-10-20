@@ -4,6 +4,7 @@
 #import "SDAppDelegate.h"
 #import "SDContentCell.h"
 #import "SDComposeContentView.h"
+#import "SDLocalNativeAccountData.h"
 #import "SDToast.h"
 #import "SDWriteViewController.h"
 #import "SystemVersion.h"
@@ -150,7 +151,7 @@
     [_backButton setEnabled:NO];
     
     // get the current location
-    SDAppDelegate *app = [UIApplication sharedApplication].delegate;
+    SDAppDelegate *app = (SDAppDelegate *)[UIApplication sharedApplication].delegate;
     CLLocation *currentLocation = [app.location getCurrentLocation];
     if (!currentLocation) {
         [SDToast toast:@"CANNOT_GET_LOCATION"];
@@ -160,8 +161,7 @@
     }
     
     // first obtain the device's current location then post the object to the server
-    NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
-    NSString *userId = [defaults stringForKey:@"userId"];
+    NSString *userId = [SDLocalNativeAccountData load].userId;
     [app.server setContent:text
                        url:url
                   location:currentLocation

@@ -11,6 +11,9 @@ typedef enum {
 
 @interface SDServer : NSObject
 + (void)setNetworkActivityIndicatorVisible:(BOOL)setVisible;
+- (void)getUserId:(NSString *)facebookAccessToken
+        onSuccess:(ServerCallback)successCallback
+        onFailure:(ServerCallback)failureCallback;
 - (void)getContentNearby:(CLLocationCoordinate2D)coordinate
                onSuccess:(ServerCallback)successCallback;
 - (void)setContent:(NSString *)content
