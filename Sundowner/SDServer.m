@@ -3,6 +3,9 @@
 #import "SDServer.h"
 #import "SDServerRequest.h"
 
+static NSString *const kSDServerHost = @"199.101.48.101";
+static NSInteger const kSDServerPort = 8050;
+
 @implementation SDServer
 
 # pragma mark - Class
@@ -40,10 +43,11 @@
 }
 
 - (void)getContentNearby:(CLLocationCoordinate2D)coordinate
+                    user:(NSString *)userId
                onSuccess:(ServerCallback)successCallback
 {
-    NSURLRequest *request = [self createRequestForEndpoint:@"/content?lng=%f&lat=%f",
-                             coordinate.longitude, coordinate.latitude];
+    NSURLRequest *request = [self createRequestForEndpoint:@"/content?lng=%f&lat=%f&user_id=%@",
+                             coordinate.longitude, coordinate.latitude, userId];
     [[[SDServerRequest alloc] initWithRequest:request onSuccess:successCallback onFailure:nil] request];
 }
 
@@ -102,10 +106,7 @@
 
 - (NSMutableURLRequest *)createRequestForEndpoint:(NSString *)format, ...
 {
-    NSUserDefaults* defaults = [[NSUserDefaults class] standardUserDefaults];
-    NSString *host = [defaults stringForKey:@"host"];
-    NSString *port = [defaults stringForKey:@"port"];
-    NSMutableString *urlString = [NSMutableString stringWithFormat:@"http://%@:%@", host, port];
+    NSMutableString *urlString = [NSMutableString stringWithFormat:@"http://%@:%d", kSDServerHost, kSDServerPort];
     
     va_list args;
     va_start(args, format);

@@ -15,6 +15,7 @@ typedef enum {
         onSuccess:(ServerCallback)successCallback
         onFailure:(ServerCallback)failureCallback;
 - (void)getContentNearby:(CLLocationCoordinate2D)coordinate
+                    user:(NSString *)userId
                onSuccess:(ServerCallback)successCallback;
 - (void)setContent:(NSString *)content
                url:(NSString *)url

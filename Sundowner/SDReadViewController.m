@@ -147,8 +147,10 @@ typedef enum {
           location.coordinate.longitude, location.coordinate.latitude, location.horizontalAccuracy);
     
     SDAppDelegate *app = (SDAppDelegate *)[UIApplication sharedApplication].delegate;
+    NSString *userId = [SDLocalNativeAccountData load].userId;
     
     [app.server getContentNearby:location.coordinate
+                            user:userId
                        onSuccess:^(NSDictionary *response) {
                            
                            // TODO what if there is a server error? Caught by the request class?

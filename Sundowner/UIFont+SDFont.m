@@ -8,6 +8,11 @@
     return [UIFont systemFontOfSize:40];
 }
 
++ (UIFont *)productFont
+{
+    return [UIFont boldSystemFontOfSize:40];
+}
+
 + (UIFont *)titleFont
 {
     return [UIFont systemFontOfSize:22];
