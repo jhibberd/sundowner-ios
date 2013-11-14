@@ -24,7 +24,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.title = NSLocalizedString(@"WRITE_TITLE", nil);
     [self.view setBackgroundColor:[UIColor backgroundColor]];
     
     if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7")) {

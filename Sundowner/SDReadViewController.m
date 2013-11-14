@@ -33,7 +33,6 @@ typedef enum {
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.title = NSLocalizedString(@"READ_TITLE", nil);
     [self.tableView setBackgroundColor:[UIColor backgroundColor]];
     
     // construct the label to show when there is no content available nearby

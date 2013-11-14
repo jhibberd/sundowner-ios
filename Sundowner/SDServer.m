@@ -3,7 +3,7 @@
 #import "SDServer.h"
 #import "SDServerRequest.h"
 
-static NSString *const kSDServerHost = @"199.101.48.101";
+static NSString *const kSDServerHost = @"khann.org";
 static NSInteger const kSDServerPort = 8050;
 
 @implementation SDServer

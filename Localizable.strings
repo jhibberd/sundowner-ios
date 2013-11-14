@@ -1,8 +1,6 @@
 "SERVER_ERROR" = "Oops, an error occurred.";
 "OK" = "OK";
 "NO_CONTENT" = "Nothing :(";
-"READ_TITLE" = "Nearby";
-"WRITE_TITLE" = "Share";
 "CANNOT_GET_LOCATION" = "Unable to find your current location.";
 "CANNOT_OPEN_URL" = "Unable to open the URL in a browser.";
 "CONTENT_POSTED" = "Posted";
