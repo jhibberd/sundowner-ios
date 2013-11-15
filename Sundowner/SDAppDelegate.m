@@ -15,7 +15,6 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {    
     self.location = [[SDLocation alloc] init];
-    self.server = [[SDServer alloc] init];
     _fbSessionManager = [[SDFacebookSessionManager alloc] initWithDelegate:self];
     
     // customize appearance of navigation bar to make it more minimalist and utilitarian
@@ -61,8 +60,13 @@
 
 # pragma mark SDFacebookSessionManagerDelegate
 
-- (void)onFacebookSessionOpen
+- (void)onFacebookSessionOpen:(NSString *)user
 {
+    // because all requests to the server must include a valid Facebook access token it doesn't make sense to have
+    // an instance of the server class before a valid Facebook session has been created
+    self.server = [[SDServer alloc] initWithAccessToken:FBSession.activeSession.accessTokenData.accessToken];
+    
+    self.user = user;
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard" bundle:nil];
     UINavigationController *nc = [storyboard instantiateViewControllerWithIdentifier:@"SessionOpenViewController"];
     self.window.rootViewController = nc;
@@ -76,6 +80,8 @@
 - (void)onFacebookSessionClosed
 {
     self.window.rootViewController = [[SDSessionClosedViewController alloc] initWithFBLoginView:_fbSessionManager.loginView];
+    self.server = nil;
+    self.user = nil;
 }
 
 @end

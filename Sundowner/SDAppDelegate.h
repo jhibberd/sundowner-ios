@@ -9,4 +9,5 @@
 @property (strong, nonatomic) UIWindow *window;
 @property (strong, retain) SDLocation *location;
 @property (strong, retain) SDServer *server;
+@property (strong, nonatomic) NSString *user;
 @end
