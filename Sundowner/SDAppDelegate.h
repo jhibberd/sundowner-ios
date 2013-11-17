@@ -2,9 +2,11 @@
 #import <UIKit/UIKit.h>
 #import "SDFacebookSessionManagerDelegate.h"
 #import "SDServer.h"
+#import "SDServerDelegate.h"
 #import "SDLocation.h"
 
-@interface SDAppDelegate : UIResponder <UIApplicationDelegate, SDFacebookSessionManagerDelegate>
+@interface SDAppDelegate : UIResponder
+    <UIApplicationDelegate, SDFacebookSessionManagerDelegate, SDServerDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 @property (strong, retain) SDLocation *location;

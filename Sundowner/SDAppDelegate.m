@@ -4,6 +4,7 @@
 #import "SDServer.h"
 #import "SDSessionClosedViewController.h"
 #import "SDSessionOpeningViewController.h"
+#import "SDToast.h"
 #import "SDLocation.h"
 #import "UIColor+SDColor.h"
 #import "UIImage+GTImage.h"
@@ -64,7 +65,7 @@
 {
     // because all requests to the server must include a valid Facebook access token it doesn't make sense to have
     // an instance of the server class before a valid Facebook session has been created
-    self.server = [[SDServer alloc] initWithAccessToken:FBSession.activeSession.accessTokenData.accessToken];
+    self.server = [[SDServer alloc] initWithAccessToken:FBSession.activeSession.accessTokenData.accessToken delegate:self];
     
     self.user = user;
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard" bundle:nil];
@@ -82,6 +83,16 @@
     self.window.rootViewController = [[SDSessionClosedViewController alloc] initWithFBLoginView:_fbSessionManager.loginView];
     self.server = nil;
     self.user = nil;
+}
+
+# pragma mark SDServerDelegate
+
+- (void)serverDetectedBadAccessToken
+{
+    // The Facebook access token passes to the server was bad so close the Facebook session.
+    // This will result in the user being presented with the login screen.
+    [SDToast toast:@"BAD_ACCESS_TOKEN"];
+    [SDFacebookSessionManager closeSession];
 }
 
 @end
