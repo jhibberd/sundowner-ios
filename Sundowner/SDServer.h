@@ -1,6 +1,7 @@
 
 #import <CoreLocation/CoreLocation.h>
 #import <Foundation/Foundation.h>
+#import "SDServerDelegate.h"
 
 typedef void(^ServerCallback)(NSDictionary *response);
 
@@ -11,19 +12,14 @@ typedef enum {
 
 @interface SDServer : NSObject
 + (void)setNetworkActivityIndicatorVisible:(BOOL)setVisible;
-- (void)getUserId:(NSString *)facebookAccessToken
-        onSuccess:(ServerCallback)successCallback
-        onFailure:(ServerCallback)failureCallback;
+- (id)initWithAccessToken:(NSString *)accessToken delegate:(id<SDServerDelegate>)delegate;
 - (void)getContentNearby:(CLLocationCoordinate2D)coordinate
-                    user:(NSString *)userId
                onSuccess:(ServerCallback)successCallback;
 - (void)setContent:(NSString *)content
                url:(NSString *)url
           location:(CLLocation *)location
-              user:(NSString *)userId
          onSuccess:(ServerCallback)successCallback
          onFailure:(ServerCallback)failureCallback;
 - (void)vote:(SDVote)vote
-     content:(NSString *)contentId
-        user:(NSString *)userId;
+     content:(NSString *)contentId;
 @end

@@ -1,7 +1,5 @@
 
 #import "SDFacebookSessionManager.h"
-#import "SDLocalNativeAccountData.h"
-#import "SDServer.h"
 
 @implementation SDFacebookSessionManager {
     id<SDFacebookSessionManagerDelegate> _delegate;
@@ -21,7 +19,6 @@
 
 + (void)closeSession
 {
-    [SDLocalNativeAccountData clear];
     [FBSession.activeSession closeAndClearTokenInformation];
 }
 
@@ -49,39 +46,8 @@
 - (void)loginViewFetchedUserInfo:(FBLoginView *)loginView user:(id<FBGraphUser>)user
 {
     // we have an active Facebook session (which includes a valid access token)
+    [_delegate onFacebookSessionOpen:user.name];
     
-    // check that we have a locally stored native user ID
-    SDLocalNativeAccountData *account = [SDLocalNativeAccountData load];
-    if (account == NULL) {
-        
-        // No locally stored native user ID (typically because this is the first time that the user has
-        // logged into Facebook from this device). Retrieve it from the server using the Facebook access
-        // token.
-        [_delegate onFacebookSessionOpening];
-        NSString *accessToken = FBSession.activeSession.accessTokenData.accessToken;
-        SDServer *server = [[SDServer alloc] init];
-        [server getUserId:accessToken onSuccess:^(NSDictionary *response) {
-            NSLog(@"Retrieved native user ID from server");
-            
-            // store the native user data locally
-            NSDictionary *data = response[@"data"];
-            NSString *userId = data[@"id"];
-            NSString *userName = data[@"name"];
-            SDLocalNativeAccountData *account = [[SDLocalNativeAccountData alloc] init];
-            account.userName = userName;
-            account.userId = userId;
-            [account save];
-            
-            [_delegate onFacebookSessionOpen];
-            
-        } onFailure:^(NSDictionary *response) {
-            NSLog(@"Failed to get native user ID from the server");
-            [_delegate onFacebookSessionClosed];
-        }];
-        
-    } else {
-        [_delegate onFacebookSessionOpen];
-    }
 }
 
 - (void)loginViewShowingLoggedOutUser:(FBLoginView *)loginView
