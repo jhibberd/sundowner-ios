@@ -17,12 +17,25 @@ CGFloat const kSDContentViewPadding = 10;
 // by each piece of content once it has been layed out using the autolayout algorithm.
 + (CGFloat)calculateContentHeight:(NSDictionary *)content constrainedByWidth:(CGFloat)width
 {
+    // content to display
     NSString *titleText = content[@"text"];
     NSString *authorText = content[@"username"];
+    
     CGSize constraint = CGSizeMake(width - (kSDContentViewPadding *2), MAXFLOAT);
+    CGFloat result = (kSDContentViewPadding *2);
+    
+    // content always visible:
     CGSize titleSize = [titleText sizeWithFont:[UIFont titleFont] constrainedToSize:constraint];
-    CGSize authorSize = [authorText sizeWithFont:[UIFont normalFont] constrainedToSize:constraint];
-    return titleSize.height + authorSize.height + (kSDContentViewPadding *2);
+    result += titleSize.height;
+    
+    // optional content:
+    // a username is hidden for content authored by someone other than a Facebook friend
+    if (authorText != nil) {
+        CGSize authorSize = [authorText sizeWithFont:[UIFont normalFont] constrainedToSize:constraint];
+        result += authorSize.height;
+    }
+    
+    return result;
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -73,7 +86,13 @@ CGFloat const kSDContentViewPadding = 10;
 {
     _text = [[NSMutableAttributedString alloc] initWithString:content[@"text"]];
     _textLabel.attributedText = _text;
-    _authorLabel.text = content[@"username"];
+    NSString *username = content[@"username"];
+    if (username == nil) {
+        _authorLabel.hidden = YES;
+    } else {
+        _authorLabel.hidden = NO;
+        _authorLabel.text = username;
+    }
 }
 
 - (void)beginVoteDownAnimation

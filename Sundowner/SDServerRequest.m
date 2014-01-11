@@ -117,6 +117,9 @@
         return;
     }
     
+    // Log the response from the server
+    NSLog(@"%@", payload);
+    
     if (_successCallback) {
         _successCallback(payload);
     }
