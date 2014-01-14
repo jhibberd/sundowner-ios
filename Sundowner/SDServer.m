@@ -4,7 +4,6 @@
 #import "SDServerRequest.h"
 
 static NSString *kSDServerPropertyServerHost = @"ServerHost";
-static NSString *kSDServerPropertyServerPort = @"ServerPort";
 
 @implementation SDServer {
     NSString *_accessToken;
@@ -109,9 +108,8 @@ static NSString *kSDServerPropertyServerPort = @"ServerPort";
 {
     NSBundle *mainBundle = [NSBundle mainBundle];
     NSString *host = [mainBundle objectForInfoDictionaryKey:kSDServerPropertyServerHost];
-    NSString *port = [mainBundle objectForInfoDictionaryKey:kSDServerPropertyServerPort];
     
-    NSMutableString *urlString = [NSMutableString stringWithFormat:@"http://%@:%@", host, port];
+    NSMutableString *urlString = [NSMutableString stringWithFormat:@"http://%@", host];
     
     va_list args;
     va_start(args, format);
