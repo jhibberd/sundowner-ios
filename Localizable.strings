@@ -7,5 +7,5 @@
 "LOCATION_UNKNOWN" = "Couldn't find your current location.";
 "LOCATION_DENIED" = "You need to enable Location Services for this app.";
 "LOCATION_SERIVCES_UNAVAILABLE" = "Location Services unavailable";
-"INTRODUCTION" = "Making life a bit easier by sharing solutions to micro-problems all over the world";
+"INTRODUCTION" = "Find and leave helpful tags in places around the world.";
 "BAD_ACCESS_TOKEN" = "There was a problem with your Facebook session. Please login again.";
