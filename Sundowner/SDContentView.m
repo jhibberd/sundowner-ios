@@ -5,10 +5,12 @@
 #import "UILabel+SDLabel.h"
 
 CGFloat const kSDContentViewPadding = 10;
+CGFloat const kSDURLIndicatorTabSize = 25.0f;
 
 @implementation SDContentView {
     UILabel *_textLabel;
     UILabel *_authorLabel;
+    BOOL _hasURL;
     NSMutableAttributedString *_text;
 }
 
@@ -78,15 +80,17 @@ CGFloat const kSDContentViewPadding = 10;
                                                                          metrics:nil
                                                                            views:variableBindings]];
         }
+        
     }
     return self;
 }
- 
+
 - (void)setContent:(NSDictionary *)content
 {
     _text = [[NSMutableAttributedString alloc] initWithString:content[@"text"]];
     _textLabel.attributedText = _text;
     NSString *username = content[@"username"];
+    _hasURL = [content objectForKey:@"url"] != nil;
     if (username == nil) {
         _authorLabel.hidden = YES;
     } else {
@@ -119,6 +123,28 @@ CGFloat const kSDContentViewPadding = 10;
                   range:NSMakeRange(0, [_text length])];
     _textLabel.attributedText = _text;
     _textLabel.textColor = [UIColor textColor];
+}
+
+// if the tag links to a URL draw a tab in the top-right corner of the tag as a visual indication
+- (void)drawRect:(CGRect)rect
+{
+    if (!_hasURL) {
+        return;
+    }
+    static CGMutablePathRef path;
+    if (path == NULL) {
+        CGFloat x = [self bounds].size.width - kSDURLIndicatorTabSize;
+        path = CGPathCreateMutable();
+        CGPathMoveToPoint(path, NULL, x, 0);
+        CGPathAddLineToPoint(path, NULL, x + kSDURLIndicatorTabSize, 0);
+        CGPathAddLineToPoint(path, NULL, x + kSDURLIndicatorTabSize, kSDURLIndicatorTabSize);
+        CGPathAddLineToPoint(path, NULL, x, 0);
+    }
+    
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGContextSetFillColorWithColor(ctx, [UIColor urlIndicatorColor].CGColor);
+    CGContextAddPath(ctx, path);
+    CGContextFillPath(ctx);
 }
 
 @end

@@ -125,7 +125,7 @@ static NSUInteger const kSDLikeViewHeight =         66.5;
 
 - (void)respondToSingleTapGesture:(UIGestureRecognizer *)recognizer
 {
-    if (_content[@"url"] != [NSNull null]) {
+    if ([_content objectForKey:@"url"] != nil) {
         [self.delegate contentURLRequested:_content];
     }
 }

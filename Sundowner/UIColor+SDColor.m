@@ -30,4 +30,8 @@
     return [UIColor colorWithRed:0/255.0 green:153/255.0 blue:204/255.0 alpha:1];
 }
 
++ (UIColor *)urlIndicatorColor {
+    return [UIColor yellowColor];
+}
+
 @end
