@@ -1,8 +1,8 @@
 
+#import "SDAppDelegate.h"
 #import "SDContentView.h"
 #import "SDComposeContentView.h"
 #import "SDContentTextView.h"
-#import "SDLocalNativeAccountData.h"
 #import "SystemVersion.h"
 #import "UIColor+SDColor.h"
 #import "UIFont+SDFont.h"
@@ -46,8 +46,9 @@
         [self addSubview:_contentTextView];
         
         // construct the author string
+        SDAppDelegate *app = (SDAppDelegate *)[UIApplication sharedApplication].delegate;
         _authorLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, componentWidth, 0)];
-        _authorLabel.text = [SDLocalNativeAccountData load].userName;
+        _authorLabel.text = app.user;
         _authorLabel.textColor = [UIColor subtextColor];
         _authorLabel.font = [UIFont normalFont];
         _authorLabel.translatesAutoresizingMaskIntoConstraints = NO;

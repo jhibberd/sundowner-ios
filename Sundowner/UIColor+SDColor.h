@@ -8,4 +8,5 @@
 + (UIColor *)backgroundTextColor;
 + (UIColor *)navIconColor;
 + (UIColor *)subtextColor;
++ (UIColor *)urlIndicatorColor;
 @end

@@ -3,10 +3,12 @@
 #import "SDServer.h"
 #import "SDServerRequest.h"
 
-static NSString *const kSDServerHost = @"khann.org";
-static NSInteger const kSDServerPort = 8050;
+static NSString *kSDServerPropertyServerHost = @"ServerHost";
 
-@implementation SDServer
+@implementation SDServer {
+    NSString *_accessToken;
+    id<SDServerDelegate> _delegate;
+}
 
 # pragma mark - Class
 
@@ -24,37 +26,30 @@ static NSInteger const kSDServerPort = 8050;
 
 # pragma mark - Public
 
-- (void)getUserId:(NSString *)facebookAccessToken
-        onSuccess:(ServerCallback)successCallback
-        onFailure:(ServerCallback)failureCallback
+- (id)initWithAccessToken:(NSString *)accessToken delegate:(id<SDServerDelegate>)delegate
 {
-    NSMutableDictionary *data = [@{@"access_token": facebookAccessToken} mutableCopy];
-    
-    NSString *payload = [self jsonEncode:data];
-    if (!payload) {
-        NSLog(@"failed to json encode payload");
-        return;
+    self = [super init];
+    if (self) {
+        _accessToken = accessToken; // Facebook access token
+        _delegate = delegate;
     }
-    
-    NSMutableURLRequest *request = [self createRequestForEndpoint:@"/users"];
-    [self preparePostRequest:request withPayload:payload];
-    
-    [[[SDServerRequest alloc] initWithRequest:request onSuccess:successCallback onFailure:failureCallback] request];
+    return self;
 }
 
 - (void)getContentNearby:(CLLocationCoordinate2D)coordinate
-                    user:(NSString *)userId
                onSuccess:(ServerCallback)successCallback
 {
-    NSURLRequest *request = [self createRequestForEndpoint:@"/content?lng=%f&lat=%f&user_id=%@",
-                             coordinate.longitude, coordinate.latitude, userId];
-    [[[SDServerRequest alloc] initWithRequest:request onSuccess:successCallback onFailure:nil] request];
+    NSURLRequest *request = [self createRequestForEndpoint:@"/content?lng=%f&lat=%f&access_token=%@",
+                             coordinate.longitude, coordinate.latitude, _accessToken];
+    [[[SDServerRequest alloc] initWithRequest:request
+                                    onSuccess:successCallback
+                                    onFailure:nil
+                                     delegate:_delegate] request];
 }
 
 - (void)setContent:(NSString *)content
                url:(NSString *)url
           location:(CLLocation *)location
-              user:(NSString *)userId
          onSuccess:(ServerCallback)successCallback
         onFailure:(ServerCallback)failureCallback
 {    
@@ -65,7 +60,7 @@ static NSInteger const kSDServerPort = 8050;
                                  @"lng":            [NSNumber numberWithDouble:longitude],
                                  @"lat":            [NSNumber numberWithDouble:latitude],
                                  @"accuracy":       [NSNumber numberWithDouble:accuracy],
-                                 @"user_id":        userId,
+                                 @"access_token":   _accessToken,
                                  @"text":           content}
                                  mutableCopy];
     if (url != nil) {
@@ -80,16 +75,18 @@ static NSInteger const kSDServerPort = 8050;
     NSMutableURLRequest *request = [self createRequestForEndpoint:@"/content"];
     [self preparePostRequest:request withPayload:payload];
     
-    [[[SDServerRequest alloc] initWithRequest:request onSuccess:successCallback onFailure:failureCallback] request];
+    [[[SDServerRequest alloc] initWithRequest:request
+                                    onSuccess:successCallback
+                                    onFailure:failureCallback
+                                     delegate:_delegate] request];
 }
 
 - (void)vote:(SDVote)vote
      content:(NSString *)contentId
-        user:(NSString *)userId
 {
-    NSDictionary *data = @{@"content_id":   contentId,
-                           @"user_id":      userId,
-                           @"vote":         @(vote)};
+    NSDictionary *data = @{@"content_id":       contentId,
+                           @"access_token":     _accessToken,
+                           @"vote":             @(vote)};
     NSString *payload = [self jsonEncode:data];
     if (!payload) {
         NSLog(@"failed to json encode payload");
@@ -99,14 +96,20 @@ static NSInteger const kSDServerPort = 8050;
     NSMutableURLRequest *request = [self createRequestForEndpoint:@"/votes"];
     [self preparePostRequest:request withPayload:payload];
     
-    [[[SDServerRequest alloc] initWithRequest:request onSuccess:nil onFailure:nil] request];
+    [[[SDServerRequest alloc] initWithRequest:request
+                                    onSuccess:nil
+                                    onFailure:nil
+                                     delegate:_delegate] request];
 }
 
 # pragma mark - Private
 
 - (NSMutableURLRequest *)createRequestForEndpoint:(NSString *)format, ...
 {
-    NSMutableString *urlString = [NSMutableString stringWithFormat:@"http://%@:%d", kSDServerHost, kSDServerPort];
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSString *host = [mainBundle objectForInfoDictionaryKey:kSDServerPropertyServerHost];
+    
+    NSMutableString *urlString = [NSMutableString stringWithFormat:@"http://%@", host];
     
     va_list args;
     va_start(args, format);

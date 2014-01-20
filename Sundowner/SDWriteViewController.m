@@ -4,7 +4,6 @@
 #import "SDAppDelegate.h"
 #import "SDContentCell.h"
 #import "SDComposeContentView.h"
-#import "SDLocalNativeAccountData.h"
 #import "SDToast.h"
 #import "SDWriteViewController.h"
 #import "SystemVersion.h"
@@ -160,11 +159,9 @@
     }
     
     // first obtain the device's current location then post the object to the server
-    NSString *userId = [SDLocalNativeAccountData load].userId;
     [app.server setContent:text
                        url:url
                   location:currentLocation
-                      user:userId
                  onSuccess:^(NSDictionary *response) {
                      // notify the user of the successful post and return to the read view
                      [SDToast toast:NSLocalizedString(@"CONTENT_POSTED", nil)];
