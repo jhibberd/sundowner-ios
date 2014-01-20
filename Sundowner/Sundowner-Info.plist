@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>ServerHost</key>
-	<string>dev.api.soaptag.org</string>
+	<string>api.soaptag.org</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
